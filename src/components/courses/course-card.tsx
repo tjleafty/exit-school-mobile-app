@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,10 +27,11 @@ export function CourseCard({ course }: CourseCardProps) {
       {/* Thumbnail */}
       <div className="aspect-video bg-muted relative">
         {course.thumbnail ? (
-          <img 
+          <Image 
             src={course.thumbnail} 
             alt={course.title}
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
           />
         ) : (
           <div className="flex items-center justify-center h-full">

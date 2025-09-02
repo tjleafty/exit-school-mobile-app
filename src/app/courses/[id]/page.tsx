@@ -40,6 +40,7 @@ const courseData = {
           type: 'VIDEO',
           duration: 720, // seconds
           completed: true,
+          locked: false,
         },
         {
           id: '1-2',
@@ -47,6 +48,7 @@ const courseData = {
           type: 'VIDEO',
           duration: 1080,
           completed: true,
+          locked: false,
         },
         {
           id: '1-3',
@@ -54,6 +56,7 @@ const courseData = {
           type: 'ARTICLE',
           duration: 600,
           completed: false,
+          locked: false,
         },
       ],
     },
@@ -216,13 +219,13 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                         <div
                           key={lesson.id}
                           className={`flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors ${
-                            lesson.locked ? 'opacity-50' : 'cursor-pointer'
+                            lesson.locked === true ? 'opacity-50' : 'cursor-pointer'
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             {lesson.completed ? (
                               <CheckCircle className="h-5 w-5 text-green-500" />
-                            ) : lesson.locked ? (
+                            ) : lesson.locked === true ? (
                               <Lock className="h-5 w-5 text-muted-foreground" />
                             ) : lesson.type === 'VIDEO' ? (
                               <PlayCircle className="h-5 w-5 text-primary" />
@@ -236,7 +239,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                               </p>
                             </div>
                           </div>
-                          {!lesson.locked && (
+                          {lesson.locked !== true && (
                             <Button variant="ghost" size="sm">
                               {lesson.completed ? 'Review' : 'Start'}
                             </Button>
