@@ -139,10 +139,15 @@ export function getToolsForUser(userId: string): Tool[] {
   const userAccess = userToolAccess.filter(access => access.userId === userId && access.hasAccess);
   const accessibleToolIds = userAccess.map(access => access.toolId);
   
-  return tools.filter(tool => 
-    tool.isActive && 
-    (!tool.isPremium || accessibleToolIds.includes(tool.id))
-  );
+  // For demo purposes, show all active tools (both free and premium)
+  // In production, uncomment the line below for proper access control
+  return tools.filter(tool => tool.isActive);
+  
+  // Production access control (commented out for demo):
+  // return tools.filter(tool => 
+  //   tool.isActive && 
+  //   (!tool.isPremium || accessibleToolIds.includes(tool.id))
+  // );
 }
 
 export function getAllTools(): Tool[] {
