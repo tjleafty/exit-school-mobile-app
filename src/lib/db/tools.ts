@@ -81,7 +81,7 @@ export const tools: Tool[] = [
     icon: 'Layers',
     url: '/tools/deal-simulator',
     isPremium: true,
-    isActive: false,
+    isActive: true,
     features: [
       'Earn-out Calculations',
       'Seller Financing Models',
