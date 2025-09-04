@@ -11,7 +11,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  MoreHorizontal
+  MoreHorizontal,
+  Wrench
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -104,6 +105,9 @@ export default function AdminDashboard() {
           </Link>
           <Link href="/admin/courses">
             <Button variant="outline">Manage Courses</Button>
+          </Link>
+          <Link href="/admin/tools">
+            <Button variant="outline">Manage Tools</Button>
           </Link>
         </div>
       </div>
@@ -298,6 +302,18 @@ export default function AdminDashboard() {
                   <Button variant="outline" className="w-full justify-start">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     View Analytics
+                  </Button>
+                </Link>
+                <Link href="/admin/tools">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Manage Tools
+                  </Button>
+                </Link>
+                <Link href="/admin/tools/access">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Users className="h-4 w-4 mr-2" />
+                    Tool Access Control
                   </Button>
                 </Link>
                 <Link href="/admin/audit-logs">

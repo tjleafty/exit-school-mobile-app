@@ -10,7 +10,8 @@ import {
   Eye,
   Edit,
   Upload,
-  Clock
+  Clock,
+  Wrench
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -117,6 +118,12 @@ export default function InstructorDashboard() {
             <Button variant="outline">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
+            </Button>
+          </Link>
+          <Link href="/instructor/tools">
+            <Button variant="outline">
+              <Wrench className="h-4 w-4 mr-2" />
+              Tools
             </Button>
           </Link>
         </div>
@@ -356,6 +363,12 @@ export default function InstructorDashboard() {
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="h-4 w-4 mr-2" />
                     View Students
+                  </Button>
+                </Link>
+                <Link href="/instructor/tools">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Manage Tools
                   </Button>
                 </Link>
                 <Link href="/instructor/schedule">
