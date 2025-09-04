@@ -55,11 +55,11 @@ export default function ToolsAccessPage() {
 
   const handleToggleAccess = (userId: string, toolId: string, currentAccess: boolean) => {
     updateToolAccess(userId, toolId, !currentAccess, 'admin');
-    forceUpdate();
+    triggerUpdate();
   };
 
-  const [, forceUpdate] = useState({});
-  const triggerUpdate = () => forceUpdate({});
+  const [updateCounter, setUpdateCounter] = useState(0);
+  const triggerUpdate = () => setUpdateCounter(prev => prev + 1);
 
   const getUserAccess = (userId: string, toolId: string): boolean => {
     const access = userToolAccess.find(

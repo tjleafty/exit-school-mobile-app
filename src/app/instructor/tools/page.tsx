@@ -223,13 +223,13 @@ export default function InstructorToolsPage() {
               <div className="space-y-3">
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    "This tool has been incredibly helpful for understanding valuation methods."
+                    &ldquo;This tool has been incredibly helpful for understanding valuation methods.&rdquo;
                   </p>
                   <p className="text-xs text-gray-400 mt-1">- Student, 2 days ago</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    "Would love to see more export options for the reports."
+                    &ldquo;Would love to see more export options for the reports.&rdquo;
                   </p>
                   <p className="text-xs text-gray-400 mt-1">- Student, 1 week ago</p>
                 </div>
