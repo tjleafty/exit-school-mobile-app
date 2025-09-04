@@ -34,9 +34,25 @@ export default function ToolsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
-    const userId = '1';
-    const userTools = getToolsForUser(userId);
-    setTools(userTools);
+    // Check if user is logged in by checking cookie
+    const getCookie = (name: string) => {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+    };
+    
+    const userRole = getCookie('user-role');
+    if (userRole) {
+      // User is logged in, show tools
+      const userId = '1'; // In production, get from auth context
+      const userTools = getToolsForUser(userId);
+      setTools(userTools);
+    } else {
+      // User not logged in, show all tools but with limited access
+      const userTools = getToolsForUser('guest');
+      setTools(userTools);
+    }
   }, []);
 
   const categories = [

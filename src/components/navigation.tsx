@@ -40,7 +40,7 @@ const navItems: NavItem[] = [
     title: 'Tools',
     href: '/tools',
     icon: <Wrench className="h-4 w-4" />,
-    roles: ['STUDENT', 'INSTRUCTOR', 'ADMIN'],
+    // Removed roles restriction so Tools is visible to everyone
   },
   {
     title: 'My Learning',
