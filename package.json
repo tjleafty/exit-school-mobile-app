@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "echo 'Build completed successfully'"
+    "postbuild": "echo 'Build completed successfully - Tools system deployed'"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
