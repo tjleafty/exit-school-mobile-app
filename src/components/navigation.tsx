@@ -13,8 +13,7 @@ import {
   LogOut,
   Menu,
   X,
-  GraduationCap,
-  Wrench
+  GraduationCap
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -35,12 +34,6 @@ const navItems: NavItem[] = [
     title: 'Courses',
     href: '/courses',
     icon: <BookOpen className="h-4 w-4" />,
-  },
-  {
-    title: 'Tools',
-    href: '/tools',
-    icon: <Wrench className="h-4 w-4" />,
-    // No roles restriction - always visible for admin users
   },
   {
     title: 'My Learning',

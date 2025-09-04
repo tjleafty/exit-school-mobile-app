@@ -27,15 +27,7 @@ export default function RootLayout({
                 <GraduationCap className="h-6 w-6 text-primary" />
                 <span className="font-bold text-xl">Exit School</span>
               </Link>
-              <div className="flex items-center gap-4">
-                <Link 
-                  href="/tools" 
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium"
-                >
-                  🔧 Tools
-                </Link>
-                <Navigation />
-              </div>
+              <Navigation />
             </div>
           </header>
           <main className="container mx-auto px-4 py-8">
