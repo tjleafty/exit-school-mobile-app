@@ -13,6 +13,7 @@
     }
   ],
   "env": {
-    "FORCE_DEPLOY": "auth-database-integration-2024-09-11"
+    "DATABASE_URL": "file:./dev.db",
+    "FORCE_DEPLOY": "auth-database-integration-production-fix"
   }
 }

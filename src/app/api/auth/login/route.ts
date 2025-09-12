@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { AuthService } from '@/lib/auth/auth-service'
+import { setupProductionDatabase } from '@/lib/db/production-setup'
 import { z } from 'zod'
 
 const LoginSchema = z.object({
@@ -10,6 +11,15 @@ const LoginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Ensure database is set up in production
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        await setupProductionDatabase()
+      } catch (setupError) {
+        console.log('Database already initialized or setup error:', setupError)
+      }
+    }
+
     const body = await request.json()
     const validatedData = LoginSchema.parse(body)
 
