@@ -11,19 +11,33 @@ const LoginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Login API called - Environment check:', {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: process.env.VERCEL,
+      DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT_SET'
+    })
+
     // Ensure database is set up in production
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
+        console.log('Setting up production database...')
         await setupProductionDatabase()
+        console.log('Production database setup completed successfully')
       } catch (setupError) {
-        console.log('Database already initialized or setup error:', setupError)
+        console.error('Database setup error:', setupError)
+        return NextResponse.json({ 
+          error: 'Database initialization failed',
+          details: setupError instanceof Error ? setupError.message : 'Unknown error'
+        }, { status: 500 })
       }
     }
 
     const body = await request.json()
+    console.log('Login request for email:', body.email)
     const validatedData = LoginSchema.parse(body)
 
     const result = await AuthService.login(validatedData)
+    console.log('Login result:', { success: result.success, error: result.error })
 
     if (!result.success) {
       return NextResponse.json({ 
@@ -41,6 +55,7 @@ export async function POST(request: NextRequest) {
         maxAge: 24 * 60 * 60, // 24 hours
         path: '/'
       })
+      console.log('Session cookie set successfully')
     }
 
     return NextResponse.json({
@@ -50,6 +65,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.issues)
       return NextResponse.json({ 
         error: 'Validation error', 
         details: error.issues 
@@ -57,7 +73,10 @@ export async function POST(request: NextRequest) {
     }
     
     console.error('Login API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
