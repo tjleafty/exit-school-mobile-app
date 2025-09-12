@@ -11,5 +11,8 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ]
+  ],
+  "env": {
+    "FORCE_DEPLOY": "auth-database-integration-2024-09-11"
+  }
 }
