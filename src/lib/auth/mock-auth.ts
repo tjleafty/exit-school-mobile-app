@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs'
 import { Role } from '@prisma/client'
 
-// Mock user data for demo purposes
-const MOCK_USERS = [
+// Mock user data for demo purposes - let's generate the hashes at runtime
+const MOCK_USERS_CONFIG = [
   {
     id: 'admin-user-id',
     email: 'admin@theexitschool.com',
     name: 'Exit School Admin',
-    password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LvKKpzGKYRIoXT1Ry', // hashed 'password'
+    password: 'password',
     role: Role.ADMIN,
     isSuperUser: true,
     isActive: true
@@ -16,7 +16,7 @@ const MOCK_USERS = [
     id: 'instructor-user-id', 
     email: 'instructor@theexitschool.com',
     name: 'John Smith',
-    password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LvKKpzGKYRIoXTf2e', // hashed 'password123'
+    password: 'password123',
     role: Role.INSTRUCTOR,
     isSuperUser: false,
     isActive: true
@@ -25,27 +25,53 @@ const MOCK_USERS = [
     id: 'student-user-id',
     email: 'student@theexitschool.com', 
     name: 'Jane Doe',
-    password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LvKKpzGKYRIoXTf2e', // hashed 'password123'
+    password: 'password123',
     role: Role.STUDENT,
     isSuperUser: false,
     isActive: true
   }
 ]
 
+// Cache for hashed passwords (will be generated on first use)
+let MOCK_USERS: any[] | null = null
+
 // Simple in-memory session storage for demo
 const sessions = new Map<string, { userId: string; expiresAt: Date }>()
+
+async function initializeMockUsers() {
+  if (MOCK_USERS) return MOCK_USERS
+  
+  console.log('Initializing mock users with hashed passwords...')
+  MOCK_USERS = []
+  
+  for (const config of MOCK_USERS_CONFIG) {
+    const hashedPassword = await bcrypt.hash(config.password, 12)
+    MOCK_USERS.push({
+      ...config,
+      password: hashedPassword
+    })
+  }
+  
+  console.log('Mock users initialized successfully')
+  return MOCK_USERS
+}
 
 export class MockAuthService {
   static async login(email: string, password: string) {
     console.log('MockAuth: Login attempt for', email)
     
+    // Initialize users if not done yet
+    await initializeMockUsers()
+    
     // Find user
-    const user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase())
+    const user = MOCK_USERS!.find(u => u.email.toLowerCase() === email.toLowerCase())
     if (!user) {
       console.log('MockAuth: User not found')
       return { success: false, error: 'Invalid email or password' }
     }
 
+    console.log('MockAuth: Found user, checking password...')
+    
     // Check password
     const isValid = await bcrypt.compare(password, user.password)
     if (!isValid) {
@@ -88,7 +114,10 @@ export class MockAuthService {
       return null
     }
 
-    const user = MOCK_USERS.find(u => u.id === session.userId)
+    // Initialize users if not done yet
+    await initializeMockUsers()
+
+    const user = MOCK_USERS!.find(u => u.id === session.userId)
     if (!user) {
       return null
     }
