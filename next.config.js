@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: []
+    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
+  },
+  // Force rebuild for authentication system deployment
+  env: {
+    FORCE_REBUILD_AUTH: new Date().getTime().toString(),
+    PRODUCTION_DATABASE_READY: 'true'
   },
   typescript: {
     ignoreBuildErrors: false

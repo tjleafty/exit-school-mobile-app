@@ -1,6 +1,6 @@
 {
   "name": "exit-school-mobile-app",
-  "version": "1.0.0-auth-database-integration",
+  "version": "1.0.1-production-database-fix",
   "private": true,
   "scripts": {
     "dev": "next dev",
