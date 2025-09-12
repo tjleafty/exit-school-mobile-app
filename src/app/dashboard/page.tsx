@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,86 +12,89 @@ import {
   PlayCircle,
   CheckCircle,
   Calendar,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react'
 import Link from 'next/link'
+import type { DashboardStats, DashboardActivity, ContinueLearningCourse, RecommendedCourse } from '@/lib/db/dashboard'
 
-// Mock data - replace with database fetch
-const dashboardData = {
+interface DashboardData {
   user: {
-    name: 'John Doe',
-    role: 'STUDENT',
-    joinDate: '2024-01-01',
-  },
-  stats: {
-    coursesEnrolled: 3,
-    coursesCompleted: 1,
-    totalHoursWatched: 24.5,
-    certificatesEarned: 1,
-    currentStreak: 5,
-  },
-  recentActivity: [
-    {
-      id: '1',
-      type: 'lesson_completed',
-      title: 'Completed "Financial Analysis"',
-      course: 'Business Acquisitions 101',
-      timestamp: '2 hours ago',
-    },
-    {
-      id: '2',
-      type: 'course_started',
-      title: 'Started "Advanced Business Valuation"',
-      course: 'Advanced Business Valuation',
-      timestamp: '1 day ago',
-    },
-    {
-      id: '3',
-      type: 'certificate_earned',
-      title: 'Earned certificate',
-      course: 'Due Diligence Masterclass',
-      timestamp: '3 days ago',
-    },
-  ],
-  continueLearning: [
-    {
-      id: 'business-acquisitions-101',
-      title: 'Business Acquisitions 101',
-      progress: 65,
-      nextLesson: 'Legal Considerations',
-      thumbnail: null,
-    },
-    {
-      id: 'advanced-valuation',
-      title: 'Advanced Business Valuation',
-      progress: 20,
-      nextLesson: 'DCF Modeling',
-      thumbnail: null,
-    },
-  ],
-  recommendedCourses: [
-    {
-      id: 'deal-structuring',
-      title: 'Deal Structuring & Negotiation',
-      instructor: 'Michael Chen',
-      duration: '5 hours',
-    },
-    {
-      id: 'financing-acquisitions',
-      title: 'Financing Your Acquisition',
-      instructor: 'Robert Wilson',
-      duration: '4 hours',
-    },
-  ],
+    name: string | null
+    role: string
+    email: string
+  }
+  stats: DashboardStats
+  recentActivity: DashboardActivity[]
+  continueLearning: ContinueLearningCourse[]
+  recommendedCourses: RecommendedCourse[]
 }
 
 export default function DashboardPage() {
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const response = await fetch('/api/dashboard')
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data')
+      }
+      
+      const data = await response.json()
+      setDashboardData(data)
+      
+    } catch (err) {
+      console.error('Dashboard fetch error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <p className="text-red-600">Error: {error}</p>
+          <Button onClick={fetchDashboardData}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!dashboardData) {
+    return null
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {dashboardData.user.name}!
+          Welcome back, {dashboardData.user.name || 'User'}!
         </h1>
         <p className="text-muted-foreground mt-2">
           Track your progress and continue your learning journey

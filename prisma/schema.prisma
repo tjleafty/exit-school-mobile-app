@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -35,19 +35,49 @@ enum VideoStatus {
   ERROR
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum PermissionType {
+  COURSE_CREATE
+  COURSE_EDIT
+  COURSE_DELETE
+  COURSE_VIEW
+  USER_CREATE
+  USER_EDIT
+  USER_DELETE
+  USER_VIEW
+  TOOL_ACCESS
+  TOOL_RESULTS_VIEW
+  ADMIN_PANEL_ACCESS
+  SYSTEM_SETTINGS
+}
+
 model User {
-  id             String       @id @default(cuid())
-  email          String       @unique
+  id             String              @id @default(cuid())
+  email          String              @unique
   name           String?
-  role           Role         @default(STUDENT)
+  password       String?             // Hashed password
+  role           Role                @default(STUDENT)
+  status         UserStatus          @default(ACTIVE)
+  isSuperUser    Boolean             @default(false) // Cannot be deleted
   organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization?       @relation(fields: [organizationId], references: [id])
   enrollments    Enrollment[]
   progress       Progress[]
   auditLogs      AuditLog[]
-  courses        Course[]     // Courses created by instructor/admin
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  courses        Course[]            // Courses created by instructor/admin
+  permissions    UserPermission[]    // Individual user permissions
+  courseAccess   UserCourseAccess[]  @relation("UserCourseAccess")
+  toolAccess     UserToolAccess[]    @relation("UserToolAccess")
+  lastLoginAt    DateTime?
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 }
 
 model Organization {
@@ -60,19 +90,20 @@ model Organization {
 }
 
 model Course {
-  id          String       @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
   description String
   thumbnail   String?
-  status      CourseStatus @default(DRAFT)
+  status      CourseStatus       @default(DRAFT)
   authorId    String
-  author      User         @relation(fields: [authorId], references: [id])
+  author      User               @relation(fields: [authorId], references: [id])
   modules     Module[]
   enrollments Enrollment[]
-  tags        String[]
-  createdAt   DateTime     @default(now())
+  userAccess  UserCourseAccess[] @relation("CourseUserAccess")
+  tags        String // JSON string for SQLite compatibility
+  createdAt   DateTime           @default(now())
   publishedAt DateTime?
-  updatedAt   DateTime     @updatedAt
+  updatedAt   DateTime           @updatedAt
 }
 
 model Module {
@@ -191,4 +222,68 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  name        PermissionType
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  userPermissions UserPermission[]
+  rolePermissions RolePermission[]
+  
+  @@unique([name])
+}
+
+model UserPermission {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  granted      Boolean    @default(true)
+  grantedBy    String?    // User ID who granted this permission
+  grantedAt    DateTime   @default(now())
+  expiresAt    DateTime?  // Optional expiration
+  
+  @@unique([userId, permissionId])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  
+  @@unique([role, permissionId])
+}
+
+model UserCourseAccess {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation("UserCourseAccess", fields: [userId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course  @relation("CourseUserAccess", fields: [courseId], references: [id], onDelete: Cascade)
+  canView  Boolean @default(true)
+  canEdit  Boolean @default(false)
+  grantedBy String?
+  grantedAt DateTime @default(now())
+  
+  @@unique([userId, courseId])
+}
+
+model UserToolAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("UserToolAccess", fields: [userId], references: [id], onDelete: Cascade)
+  toolName   String   // Name of the tool (e.g., "calculator", "editor")
+  canAccess  Boolean  @default(true)
+  grantedBy  String?
+  grantedAt  DateTime @default(now())
+  expiresAt  DateTime?
+  
+  @@unique([userId, toolName])
 }

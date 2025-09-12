@@ -1,40 +1,43 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, Mail, Lock, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { GraduationCap, Mail, User, Lock, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    role: 'STUDENT' as 'STUDENT' | 'INSTRUCTOR'
   })
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
-  const [successMessage, setSuccessMessage] = useState('')
-  
-  useEffect(() => {
-    const message = searchParams.get('message')
-    if (message) {
-      setSuccessMessage(message)
-    }
-  }, [searchParams])
+  const [success, setSuccess] = useState(false)
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }))
     if (errors.length > 0) setErrors([]) // Clear errors on input change
-    if (successMessage) setSuccessMessage('') // Clear success message on input change
+  }
+
+  const handleRoleChange = (value: string) => {
+    setFormData(prev => ({ ...prev, role: value as 'STUDENT' | 'INSTRUCTOR' }))
   }
 
   const validateForm = (): boolean => {
     const newErrors: string[] = []
+
+    if (!formData.name.trim()) {
+      newErrors.push('Name is required')
+    }
 
     if (!formData.email.trim()) {
       newErrors.push('Email is required')
@@ -44,6 +47,12 @@ export default function LoginPage() {
 
     if (!formData.password) {
       newErrors.push('Password is required')
+    } else if (formData.password.length < 8) {
+      newErrors.push('Password must be at least 8 characters')
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.push('Passwords do not match')
     }
 
     setErrors(newErrors)
@@ -59,14 +68,16 @@ export default function LoginPage() {
     setErrors([])
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          name: formData.name.trim(),
           email: formData.email.trim(),
-          password: formData.password
+          password: formData.password,
+          role: formData.role
         }),
       })
 
@@ -76,35 +87,52 @@ export default function LoginPage() {
         if (data.details && Array.isArray(data.details)) {
           // Zod validation errors
           setErrors(data.details.map((detail: any) => detail.message))
+        } else if (data.details && Array.isArray(data.details)) {
+          // Password validation errors
+          setErrors(data.details)
         } else {
-          setErrors([data.error || 'Login failed'])
+          setErrors([data.error || 'Registration failed'])
         }
         return
       }
 
-      // Success - redirect based on user role
-      const user = data.user
-      switch (user.role) {
-        case 'ADMIN':
-          router.push('/admin')
-          break
-        case 'INSTRUCTOR':
-          router.push('/instructor')
-          break
-        case 'STUDENT':
-        default:
-          router.push('/dashboard')
-          break
-      }
+      setSuccess(true)
+      
+      // Redirect to login after success message
+      setTimeout(() => {
+        router.push('/login?message=Registration successful! Please log in.')
+      }, 2000)
 
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Registration error:', error)
       setErrors(['Network error. Please try again.'])
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+                <h2 className="text-2xl font-bold">Registration Successful!</h2>
+                <p className="text-muted-foreground">
+                  Your account has been created successfully. Redirecting you to login...
+                </p>
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4">
@@ -115,27 +143,37 @@ export default function LoginPage() {
             <GraduationCap className="h-10 w-10 text-primary" />
             <span className="font-bold text-2xl">Exit School</span>
           </Link>
-          <p className="text-muted-foreground mt-2">Sign in to your account</p>
+          <p className="text-muted-foreground mt-2">Create your account</p>
         </div>
 
-        {/* Login Card */}
+        {/* Registration Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
+            <CardTitle>Get Started</CardTitle>
             <CardDescription>
-              Sign in to your account
+              Create your account to access courses
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Success Message */}
-            {successMessage && (
-              <div className="mb-4 flex items-center text-sm text-green-600">
-                <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                {successMessage}
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={handleInputChange('name')}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -154,6 +192,20 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="role">Account Type</Label>
+                <Select value={formData.role} onValueChange={handleRoleChange} disabled={isLoading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="STUDENT">Student - Access courses and track progress</SelectItem>
+                    <SelectItem value="INSTRUCTOR">Instructor - Create and manage courses</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Password Field */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -162,9 +214,27 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="At least 8 characters"
                     value={formData.password}
                     onChange={handleInputChange('password')}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange('confirmPassword')}
                     className="pl-10"
                     required
                     disabled={isLoading}
@@ -192,29 +262,19 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Creating Account...
                   </>
                 ) : (
-                  'Sign In'
+                  'Create Account'
                 )}
               </Button>
             </form>
-
-            {/* Forgot Password Link */}
-            <div className="text-center">
-              <Link 
-                href="/forgot-password" 
-                className="text-sm text-muted-foreground hover:text-primary underline"
-              >
-                Forgot your password?
-              </Link>
-            </div>
           </CardContent>
           <CardFooter>
             <p className="text-center text-sm text-muted-foreground w-full">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="font-medium text-primary hover:underline">
-                Sign up
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Sign in
               </Link>
             </p>
           </CardFooter>
@@ -222,7 +282,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to our{' '}
+          By creating an account, you agree to our{' '}
           <Link href="/terms" className="underline hover:text-primary">
             Terms of Service
           </Link>{' '}
