@@ -1,5 +1,6 @@
 import { PrismaClient, Role, PermissionType, CourseStatus, LessonType } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { migrateDatabase } from './migrate'
 
 const prisma = new PrismaClient()
 
@@ -7,8 +8,40 @@ const prisma = new PrismaClient()
 export async function setupProductionDatabase() {
   try {
     console.log('Setting up production database...')
+    console.log('Database URL:', process.env.DATABASE_URL)
+    
+    // Test database connection first
+    try {
+      await prisma.$connect()
+      console.log('Database connection successful')
+    } catch (connectionError) {
+      console.error('Database connection failed:', connectionError)
+      throw new Error(`Database connection failed: ${connectionError instanceof Error ? connectionError.message : 'Unknown error'}`)
+    }
+
+    // For in-memory or new databases, we need to apply the schema
+    if (process.env.DATABASE_URL?.includes(':memory:') || process.env.VERCEL) {
+      console.log('Serverless environment detected, ensuring schema exists...')
+      try {
+        await migrateDatabase()
+        console.log('Database schema applied successfully')
+      } catch (migrateError) {
+        console.error('Database migration failed:', migrateError)
+        throw new Error(`Database migration failed: ${migrateError instanceof Error ? migrateError.message : 'Unknown error'}`)
+      }
+    }
+
+    // Test basic database functionality
+    try {
+      const userCount = await prisma.user.count()
+      console.log(`Database query test successful - found ${userCount} users`)
+    } catch (queryError) {
+      console.error('Database query test failed:', queryError)
+      throw new Error(`Database query failed: ${queryError instanceof Error ? queryError.message : 'Unknown error'}`)
+    }
 
     // Create default permissions first
+    console.log('Creating permissions...')
     const permissions = [
       { name: PermissionType.COURSE_CREATE, description: 'Create new courses' },
       { name: PermissionType.COURSE_EDIT, description: 'Edit existing courses' },
@@ -25,14 +58,21 @@ export async function setupProductionDatabase() {
     ]
 
     for (const permission of permissions) {
-      await prisma.permission.upsert({
-        where: { name: permission.name },
-        update: { description: permission.description },
-        create: permission
-      })
+      try {
+        await prisma.permission.upsert({
+          where: { name: permission.name },
+          update: { description: permission.description },
+          create: permission
+        })
+      } catch (permError) {
+        console.error(`Failed to create permission ${permission.name}:`, permError)
+        throw new Error(`Permission creation failed: ${permError instanceof Error ? permError.message : 'Unknown error'}`)
+      }
     }
+    console.log('Permissions created successfully')
 
     // Create admin user
+    console.log('Creating admin user...')
     const adminPassword = await bcrypt.hash('password', 12)
     const adminUser = await prisma.user.upsert({
       where: { email: 'admin@theexitschool.com' },

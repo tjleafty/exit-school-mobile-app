@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "file:./dev.db",
+    "DATABASE_URL": "file::memory:?cache=shared",
     "FORCE_DEPLOY": "auth-database-integration-production-fix"
   }
 }
