@@ -240,12 +240,12 @@ export class DashboardService {
       let nextModuleId = null
       let nextLessonId = null
 
-      for (const module of course.modules) {
-        for (const lesson of module.lessons) {
+      for (const courseModule of course.modules) {
+        for (const lesson of courseModule.lessons) {
           const isCompleted = lesson.progress.some(p => p.completed)
           if (!isCompleted) {
             nextLesson = lesson.title
-            nextModuleId = module.id
+            nextModuleId = courseModule.id
             nextLessonId = lesson.id
             break
           }
@@ -314,7 +314,7 @@ export class DashboardService {
         instructor: course.author.name || course.author.email,
         duration,
         description: course.description,
-        tags: course.tags
+        tags: JSON.parse(course.tags || '[]')
       }
     })
   }

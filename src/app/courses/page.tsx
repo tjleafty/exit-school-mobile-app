@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { CourseCard } from '@/components/courses/course-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,19 +24,6 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
-  
-  useEffect(() => {
-    fetchInitialData()
-  }, [])
-  
-  useEffect(() => {
-    // Debounced search
-    const timer = setTimeout(() => {
-      fetchCourses()
-    }, 300)
-    
-    return () => clearTimeout(timer)
-  }, [searchTerm, selectedTags])
   
   const fetchInitialData = async () => {
     try {
@@ -68,7 +55,7 @@ export default function CoursesPage() {
     }
   }
   
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const params = new URLSearchParams()
       if (searchTerm) params.append('search', searchTerm)
@@ -87,7 +74,20 @@ export default function CoursesPage() {
       console.error('Search error:', err)
       // Don't show error for search failures, just keep existing courses
     }
-  }
+  }, [searchTerm, selectedTags])
+
+  useEffect(() => {
+    fetchInitialData()
+  }, [])
+  
+  useEffect(() => {
+    // Debounced search
+    const timer = setTimeout(() => {
+      fetchCourses()
+    }, 300)
+    
+    return () => clearTimeout(timer)
+  }, [searchTerm, selectedTags, fetchCourses])
   
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
@@ -239,7 +239,7 @@ export default function CoursesPage() {
         
         {courses.length > 0 && searchTerm && (
           <p className="text-sm text-muted-foreground">
-            Results for "{searchTerm}"
+            Results for &ldquo;{searchTerm}&rdquo;
           </p>
         )}
       </div>

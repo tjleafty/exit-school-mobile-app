@@ -231,7 +231,7 @@ export class CoursesService {
         return []
       }
     })
-    const uniqueTags = [...new Set(allTags)].sort()
+    const uniqueTags = Array.from(new Set(allTags)).sort()
     
     return uniqueTags
   }

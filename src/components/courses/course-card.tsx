@@ -10,7 +10,7 @@ interface CourseCardProps {
     id: string
     title: string
     description: string
-    thumbnail?: string
+    thumbnail?: string | null
     instructor: string
     duration: string
     modules: number
