@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Create file record in database
     const resourceFile = await prisma.resourceFile.create({
       data: {
-        lessonId: lessonId || null,
+        lessonId: lessonId || undefined,
         fileName,
         fileUrl: uploadResult.publicUrl,
         fileSize,
