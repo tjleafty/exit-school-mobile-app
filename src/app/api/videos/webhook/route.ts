@@ -61,7 +61,8 @@ async function handleAssetReady(event: any) {
     // Create a playback ID if it doesn't exist
     let playbackId = muxAsset.playbackId
     if (!playbackId) {
-      playbackId = await MuxService.createPlaybackId(assetId, 'signed')
+      const newPlaybackId = await MuxService.createPlaybackId(assetId, 'signed')
+      playbackId = newPlaybackId || undefined
     }
 
     // Update the database record
