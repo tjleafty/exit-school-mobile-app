@@ -36,31 +36,6 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
-  useEffect(() => {
-    fetchCourses()
-  }, [])
-
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchCourseAnalytics()
-    }
-  }, [selectedCourse, fetchCourseAnalytics])
-
-  const fetchCourses = async () => {
-    try {
-      const response = await fetch('/api/courses')
-      if (response.ok) {
-        const data = await response.json()
-        setCourses(data.courses || [])
-        if (data.courses?.length > 0) {
-          setSelectedCourse(data.courses[0].id)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error)
-    }
-  }
-
   const fetchCourseAnalytics = useCallback(async () => {
     if (!selectedCourse) return
     
@@ -110,6 +85,31 @@ export default function AnalyticsPage() {
       setLoading(false)
     }
   }, [selectedCourse])
+
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchCourseAnalytics()
+    }
+  }, [selectedCourse, fetchCourseAnalytics])
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch('/api/courses')
+      if (response.ok) {
+        const data = await response.json()
+        setCourses(data.courses || [])
+        if (data.courses?.length > 0) {
+          setSelectedCourse(data.courses[0].id)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    }
+  }
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
