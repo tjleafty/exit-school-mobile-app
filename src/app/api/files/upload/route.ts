@@ -332,9 +332,9 @@ async function checkUploadPermissions(session: any, fileType: string, courseId?:
       }
       
       const canEdit = PermissionManager.canAccessCourse(session.permissions, courseId, 'edit')
-      const canCreateCourses = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
+      const canEditCoursesForResource = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
       
-      if (!canEdit && !canCreateCourses) {
+      if (!canEdit && !canEditCoursesForResource) {
         return { allowed: false, error: 'Insufficient permissions to add resources to this course. Must be instructor or admin.' }
       }
       break
@@ -350,9 +350,9 @@ async function checkUploadPermissions(session: any, fileType: string, courseId?:
       }
       
       const canEditCourse = PermissionManager.canAccessCourse(session.permissions, courseId, 'edit')
-      const canEditCourses = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
+      const canEditCoursesForThumbnail = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
       
-      if (!canEditCourse && !canEditCourses) {
+      if (!canEditCourse && !canEditCoursesForThumbnail) {
         return { allowed: false, error: 'Insufficient permissions to edit this course. Must be instructor or admin.' }
       }
       break
@@ -363,10 +363,10 @@ async function checkUploadPermissions(session: any, fileType: string, courseId?:
 
     case 'document':
       // Admins can upload any document, instructors can upload course-related documents
-      const canCreateCourses = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_CREATE)
-      const canEditCourses = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
+      const canCreateCoursesForDoc = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_CREATE)
+      const canEditCoursesForDoc = PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_EDIT)
       
-      if (!isAdmin && !canCreateCourses && !canEditCourses) {
+      if (!isAdmin && !canCreateCoursesForDoc && !canEditCoursesForDoc) {
         return { allowed: false, error: 'Insufficient permissions to upload documents. Must be instructor or admin.' }
       }
       break
