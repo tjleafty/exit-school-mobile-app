@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
     if (selectedCourse) {
       fetchCourseAnalytics()
     }
-  }, [selectedCourse])
+  }, [selectedCourse, fetchCourseAnalytics])
 
   const fetchCourses = async () => {
     try {
@@ -61,7 +61,7 @@ export default function AnalyticsPage() {
     }
   }
 
-  const fetchCourseAnalytics = async () => {
+  const fetchCourseAnalytics = useCallback(async () => {
     if (!selectedCourse) return
     
     setLoading(true)
@@ -109,7 +109,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedCourse])
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)

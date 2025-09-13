@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -53,13 +53,13 @@ export default function InstructorAnalyticsPage() {
     if (selectedCourse) {
       fetchCourseData()
     }
-  }, [selectedCourse])
+  }, [selectedCourse, fetchCourseData])
 
   useEffect(() => {
     if (selectedLesson) {
       fetchLessonMetrics()
     }
-  }, [selectedLesson])
+  }, [selectedLesson, fetchLessonMetrics])
 
   const fetchCourses = async () => {
     try {
@@ -76,7 +76,7 @@ export default function InstructorAnalyticsPage() {
     }
   }
 
-  const fetchCourseData = async () => {
+  const fetchCourseData = useCallback(async () => {
     if (!selectedCourse) return
     
     setLoading(true)
@@ -134,9 +134,9 @@ export default function InstructorAnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedCourse])
 
-  const fetchLessonMetrics = async () => {
+  const fetchLessonMetrics = useCallback(async () => {
     if (!selectedLesson) return
     
     try {
@@ -148,7 +148,7 @@ export default function InstructorAnalyticsPage() {
     } catch (error) {
       console.error('Error fetching lesson metrics:', error)
     }
-  }
+  }, [selectedLesson])
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -193,7 +193,7 @@ export default function InstructorAnalyticsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Course Analytics</h1>
           <p className="text-muted-foreground">
-            Monitor your students' progress and course performance
+            Monitor your students&apos; progress and course performance
           </p>
         </div>
         
@@ -364,7 +364,7 @@ export default function InstructorAnalyticsPage() {
               <CardHeader>
                 <CardTitle>Individual Student Progress</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Detailed view of your students' learning journey
+                  Detailed view of your students&apos; learning journey
                 </p>
               </CardHeader>
               <CardContent>

@@ -17,7 +17,7 @@ import {
   Video,
   MapPin,
   Bell,
-  Sync
+  RefreshCw as Sync
 } from 'lucide-react'
 import CalendarView from '@/components/calendar/calendar-view'
 import EventForm from '@/components/calendar/event-form'
