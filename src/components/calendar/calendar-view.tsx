@@ -20,7 +20,7 @@ import {
 import { EventType, EventStatus } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id: string
   title: string
   description?: string

@@ -19,42 +19,13 @@ import {
   Bell,
   RefreshCw as Sync
 } from 'lucide-react'
-import CalendarView from '@/components/calendar/calendar-view'
+import CalendarView, { CalendarEvent as CalendarViewEvent } from '@/components/calendar/calendar-view'
 import EventForm from '@/components/calendar/event-form'
 import EventDetails from '@/components/calendar/event-details'
 import { EventType, EventStatus, CalendarProvider } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-interface CalendarEvent {
-  id: string
-  title: string
-  description?: string
-  location?: string
-  startTime: Date
-  endTime: Date
-  allDay: boolean
-  type: EventType
-  status: EventStatus
-  zoomJoinUrl?: string
-  zoomStartUrl?: string
-  course?: {
-    id: string
-    title: string
-  }
-  createdBy: {
-    id: string
-    name: string
-    email: string
-  }
-  attendees: {
-    user: {
-      id: string
-      name: string
-      email: string
-    }
-    status: string
-  }[]
-}
+// Using CalendarEvent type from calendar-view component
 
 interface Course {
   id: string
@@ -76,15 +47,15 @@ interface CalendarIntegration {
 }
 
 export default function CalendarPage() {
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([])
+  const [events, setEvents] = useState<CalendarViewEvent[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<CalendarViewEvent[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [integrations, setIntegrations] = useState<CalendarIntegration[]>([])
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarViewEvent | null>(null)
   const [showEventForm, setShowEventForm] = useState(false)
   const [showEventDetails, setShowEventDetails] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<CalendarViewEvent | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string>('')
@@ -280,7 +251,7 @@ export default function CalendarPage() {
     }
   }
 
-  const handleEventClick = (event: CalendarEvent) => {
+  const handleEventClick = (event: CalendarViewEvent) => {
     setSelectedEvent(event)
     setShowEventDetails(true)
   }
