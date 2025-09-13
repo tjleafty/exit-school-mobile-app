@@ -16,18 +16,13 @@ export async function GET(request: NextRequest) {
 
     let user = null
 
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      // Use mock authentication in production
+    // Try real authentication first
+    try {
+      const session = await SessionManager.getSession()
+      user = session?.user || null
+    } catch (error) {
+      console.error('Database session validation failed, trying mock auth:', error)
       user = await MockAuthService.validateSession(sessionToken)
-    } else {
-      // Use real authentication in development
-      try {
-        const session = await SessionManager.getSession()
-        user = session?.user || null
-      } catch (error) {
-        console.error('Database session validation failed, trying mock auth:', error)
-        user = await MockAuthService.validateSession(sessionToken)
-      }
     }
 
     if (!user) {

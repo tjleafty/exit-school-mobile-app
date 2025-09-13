@@ -123,6 +123,24 @@ export class PermissionManager {
   static getUserPermissions(role: Role): PermissionType[] {
     return DEFAULT_ROLE_PERMISSIONS[role] || []
   }
+
+  static canUploadContent(userPermissions: PermissionCheck): boolean {
+    // Admins and instructors can upload content
+    return (
+      userPermissions.role === Role.ADMIN ||
+      userPermissions.role === Role.INSTRUCTOR ||
+      this.hasPermission(userPermissions, PermissionType.COURSE_CREATE) ||
+      this.hasPermission(userPermissions, PermissionType.COURSE_EDIT)
+    )
+  }
+
+  static canEditAnyCourse(userPermissions: PermissionCheck): boolean {
+    // Only admins can edit any course
+    return (
+      userPermissions.role === Role.ADMIN ||
+      this.hasPermission(userPermissions, PermissionType.ADMIN_PANEL_ACCESS)
+    )
+  }
 }
 
 // Route-based permission checks

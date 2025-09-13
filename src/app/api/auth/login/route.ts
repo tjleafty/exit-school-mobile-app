@@ -24,20 +24,14 @@ export async function POST(request: NextRequest) {
 
     let result
 
-    // Use mock authentication in production/Vercel environment due to database limitations
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      console.log('Using mock authentication for production demo')
+    // Try real database authentication first
+    console.log('Using database authentication')
+    try {
+      await setupProductionDatabase()
+      result = await AuthService.login(validatedData)
+    } catch (setupError) {
+      console.error('Database setup error, falling back to mock auth:', setupError)
       result = await MockAuthService.login(validatedData.email, validatedData.password)
-    } else {
-      // Use real database authentication in development
-      console.log('Using database authentication for development')
-      try {
-        await setupProductionDatabase()
-        result = await AuthService.login(validatedData)
-      } catch (setupError) {
-        console.error('Database setup error, falling back to mock auth:', setupError)
-        result = await MockAuthService.login(validatedData.email, validatedData.password)
-      }
     }
 
     console.log('Login result:', { success: result.success, error: result.error })
@@ -89,10 +83,11 @@ export async function DELETE(request: NextRequest) {
     const sessionToken = cookieStore.get('session-token')?.value
 
     if (sessionToken) {
-      if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-        MockAuthService.logout(sessionToken)
-      } else {
+      try {
         await AuthService.logout(sessionToken)
+      } catch (error) {
+        console.error('Database logout error, falling back to mock auth:', error)
+        MockAuthService.logout(sessionToken)
       }
     }
 

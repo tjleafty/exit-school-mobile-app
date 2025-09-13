@@ -54,7 +54,9 @@ export async function setupProductionDatabase() {
       { name: PermissionType.TOOL_ACCESS, description: 'Access platform tools' },
       { name: PermissionType.TOOL_RESULTS_VIEW, description: 'View tool usage results' },
       { name: PermissionType.ADMIN_PANEL_ACCESS, description: 'Access administrative panel' },
-      { name: PermissionType.SYSTEM_SETTINGS, description: 'Modify system settings' }
+      { name: PermissionType.SYSTEM_SETTINGS, description: 'Modify system settings' },
+      { name: PermissionType.CALENDAR_MANAGE, description: 'Manage calendar events' },
+      { name: PermissionType.CALENDAR_VIEW, description: 'View calendar events' }
     ]
 
     for (const permission of permissions) {

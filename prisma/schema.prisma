@@ -55,38 +55,81 @@ enum PermissionType {
   TOOL_RESULTS_VIEW
   ADMIN_PANEL_ACCESS
   SYSTEM_SETTINGS
+  CALENDAR_MANAGE
+  CALENDAR_VIEW
+}
+
+enum EventType {
+  MEETING
+  LECTURE
+  WORKSHOP
+  EXAM
+  ASSIGNMENT_DUE
+  OFFICE_HOURS
+  BREAK
+  OTHER
+}
+
+enum EventStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+  IN_PROGRESS
+}
+
+enum RecurrenceType {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum CalendarProvider {
+  GOOGLE
+  OUTLOOK
+  APPLE
+  ZOOM
 }
 
 model User {
-  id             String              @id @default(cuid())
-  email          String              @unique
-  name           String?
-  password       String?             // Hashed password
-  role           Role                @default(STUDENT)
-  status         UserStatus          @default(ACTIVE)
-  isSuperUser    Boolean             @default(false) // Cannot be deleted
-  organizationId String?
-  organization   Organization?       @relation(fields: [organizationId], references: [id])
-  enrollments    Enrollment[]
-  progress       Progress[]
-  auditLogs      AuditLog[]
-  courses        Course[]            // Courses created by instructor/admin
-  permissions    UserPermission[]    // Individual user permissions
-  courseAccess   UserCourseAccess[]  @relation("UserCourseAccess")
-  toolAccess     UserToolAccess[]    @relation("UserToolAccess")
-  lastLoginAt    DateTime?
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  id               String              @id @default(cuid())
+  email            String              @unique
+  name             String?
+  password         String?             // Hashed password
+  role             Role                @default(STUDENT)
+  status           UserStatus          @default(ACTIVE)
+  isSuperUser      Boolean             @default(false) // Cannot be deleted
+  organizationId   String?
+  organization     Organization?       @relation(fields: [organizationId], references: [id])
+  enrollments      Enrollment[]
+  progress         Progress[]
+  auditLogs        AuditLog[]
+  courses          Course[]            // Courses created by instructor/admin
+  permissions      UserPermission[]    // Individual user permissions
+  courseAccess     UserCourseAccess[]  @relation("UserCourseAccess")
+  toolAccess       UserToolAccess[]    @relation("UserToolAccess")
+  learningSessions LearningSession[]   // Learning sessions for progress tracking
+  
+  // Calendar relationships
+  createdEvents    CalendarEvent[]     @relation("EventsCreated")
+  eventAttendances EventAttendee[]     @relation("EventAttendances")
+  calendarSettings UserCalendarSettings? @relation("CalendarSettings")
+  
+  lastLoginAt      DateTime?
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 }
 
 model Organization {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  domain    String?  @unique
+  domain    String?         @unique
   users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  events    CalendarEvent[] // Organization events
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Course {
@@ -100,6 +143,7 @@ model Course {
   modules     Module[]
   enrollments Enrollment[]
   userAccess  UserCourseAccess[] @relation("CourseUserAccess")
+  events      CalendarEvent[]    // Course-related events
   tags        String // JSON string for SQLite compatibility
   createdAt   DateTime           @default(now())
   publishedAt DateTime?
@@ -119,22 +163,23 @@ model Module {
 }
 
 model Lesson {
-  id              String           @id @default(cuid())
-  moduleId        String
-  module          Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  title           String
-  description     String?
-  type            LessonType
-  content         String?          // For articles (markdown/HTML)
-  order           Int
-  duration        Int?             // Duration in seconds
-  videoAsset      VideoAsset?
-  resources       ResourceFile[]
-  progress        Progress[]
-  releaseSchedule ReleaseSchedule?
-  version         Int              @default(1)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  moduleId         String
+  module           Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  type             LessonType
+  content          String?          // For articles (markdown/HTML)
+  order            Int
+  duration         Int?             // Duration in seconds
+  videoAsset       VideoAsset?
+  resources        ResourceFile[]
+  progress         Progress[]
+  learningSessions LearningSession[]
+  releaseSchedule  ReleaseSchedule?
+  version          Int              @default(1)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }
 
 model VideoAsset {
@@ -186,11 +231,60 @@ model Progress {
   completed      Boolean  @default(false)
   percentWatched Int      @default(0)
   lastPosition   Float    @default(0) // Last position in seconds
+  timeSpent      Int      @default(0) // Total time spent in seconds
+  attempts       Int      @default(1) // Number of times started
   completedAt    DateTime?
+  firstStartedAt DateTime?
+  lastAccessedAt DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  
+  sessions       LearningSession[]
 
   @@unique([userId, lessonId])
+}
+
+model LearningSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  progressId String
+  progress   Progress  @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  lessonId   String
+  lesson     Lesson    @relation(fields: [lessonId], references: [id])
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+  duration   Int?      // Session duration in seconds
+  completed  Boolean   @default(false)
+  
+  interactions SessionInteraction[]
+  
+  @@index([userId, lessonId])
+}
+
+model SessionInteraction {
+  id          String         @id @default(cuid())
+  sessionId   String
+  session     LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type        InteractionType
+  timestamp   DateTime       @default(now())
+  data        Json?          // Additional interaction data
+  position    Float?         // Video position for video interactions
+  
+  @@index([sessionId, timestamp])
+}
+
+enum InteractionType {
+  LESSON_START
+  LESSON_PAUSE
+  LESSON_RESUME
+  LESSON_SEEK
+  LESSON_COMPLETE
+  RESOURCE_DOWNLOAD
+  QUIZ_START
+  QUIZ_SUBMIT
+  NOTE_CREATE
+  BOOKMARK_ADD
 }
 
 model ReleaseSchedule {
@@ -286,4 +380,136 @@ model UserToolAccess {
   expiresAt  DateTime?
   
   @@unique([userId, toolName])
+}
+
+model CalendarEvent {
+  id              String        @id @default(cuid())
+  title           String
+  description     String?
+  location        String?
+  startTime       DateTime
+  endTime         DateTime
+  allDay          Boolean       @default(false)
+  type            EventType     @default(MEETING)
+  status          EventStatus   @default(SCHEDULED)
+  
+  // Creator and organization
+  createdById     String
+  createdBy       User          @relation("EventsCreated", fields: [createdById], references: [id])
+  organizationId  String?
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  
+  // Course association (optional)
+  courseId        String?
+  course          Course?       @relation(fields: [courseId], references: [id])
+  
+  // Zoom integration
+  zoomMeetingId   String?       @unique
+  zoomJoinUrl     String?
+  zoomStartUrl    String?
+  zoomPassword    String?
+  
+  // Recurrence
+  isRecurring     Boolean       @default(false)
+  recurrenceType  RecurrenceType @default(NONE)
+  recurrenceEnd   DateTime?
+  parentEventId   String?       // For recurring events
+  parentEvent     CalendarEvent? @relation("RecurringEvents", fields: [parentEventId], references: [id])
+  childEvents     CalendarEvent[] @relation("RecurringEvents")
+  
+  // External calendar sync
+  externalEventId String?       // ID from external calendar (Google, Outlook, etc.)
+  syncedWith      String?       // JSON array of CalendarProvider values
+  
+  // Attendees
+  attendees       EventAttendee[]
+  
+  // Metadata
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([startTime, endTime])
+  @@index([createdById])
+  @@index([courseId])
+}
+
+model EventAttendee {
+  id              String        @id @default(cuid())
+  eventId         String
+  event           CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation("EventAttendances", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // RSVP status
+  status          String        @default("pending") // pending, accepted, declined, maybe
+  responseTime    DateTime?
+  
+  // Notifications
+  notified        Boolean       @default(false)
+  reminderSent    Boolean       @default(false)
+  
+  // Attendance tracking
+  joinedAt        DateTime?
+  leftAt          DateTime?
+  attendanceMarked Boolean       @default(false)
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@unique([eventId, userId])
+  @@index([userId])
+}
+
+model UserCalendarSettings {
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  user                  User                @relation("CalendarSettings", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Display preferences
+  defaultView           String              @default("week") // day, week, month
+  workingHoursStart     String              @default("09:00")
+  workingHoursEnd       String              @default("17:00")
+  timezone              String              @default("UTC")
+  
+  // Notification preferences
+  emailNotifications    Boolean             @default(true)
+  reminderMinutes       Int                 @default(15)
+  dailyDigest           Boolean             @default(true)
+  weeklyDigest          Boolean             @default(true)
+  
+  // External calendar integrations
+  integrations          CalendarIntegration[]
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model CalendarIntegration {
+  id                    String              @id @default(cuid())
+  userId                String
+  userSettings          UserCalendarSettings @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  
+  provider              CalendarProvider
+  providerUserId        String              // User ID from external provider
+  calendarId            String?             // Specific calendar ID (for providers with multiple calendars)
+  
+  // OAuth credentials
+  accessToken           String
+  refreshToken          String?
+  tokenExpiry           DateTime?
+  
+  // Sync settings
+  syncEnabled           Boolean             @default(true)
+  syncDirection         String              @default("both") // import, export, both
+  lastSyncAt            DateTime?
+  syncStatus            String              @default("active") // active, error, paused
+  
+  // Provider-specific settings
+  providerSettings      Json?               // Store provider-specific configuration
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  @@unique([userId, provider])
+  @@index([provider])
 }

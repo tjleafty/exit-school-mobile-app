@@ -13,68 +13,62 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 import Link from 'next/link'
+import { PrismaClient, CourseStatus } from '@prisma/client'
+import { SessionManager } from '@/lib/auth/session'
+import { PermissionManager } from '@/lib/auth/permissions'
+import { PermissionType } from '@prisma/client'
+import { redirect } from 'next/navigation'
 
-// Mock data for admin course management
-const adminCourses = [
-  {
-    id: 'business-acquisitions-101',
-    title: 'Business Acquisitions 101',
-    instructor: 'John Smith',
-    status: 'PUBLISHED',
-    students: 1234,
-    created: '2024-01-15',
-    lastUpdated: '2024-01-20',
-    modules: 3,
-    lessons: 12,
-  },
-  {
-    id: 'advanced-valuation',
-    title: 'Advanced Business Valuation',
-    instructor: 'Sarah Johnson',
-    status: 'PUBLISHED',
-    students: 567,
-    created: '2024-01-10',
-    lastUpdated: '2024-01-18',
-    modules: 4,
-    lessons: 10,
-  },
-  {
-    id: 'deal-structuring',
-    title: 'Deal Structuring & Negotiation',
-    instructor: 'Michael Chen',
-    status: 'PUBLISHED',
-    students: 890,
-    created: '2024-01-08',
-    lastUpdated: '2024-01-16',
-    modules: 3,
-    lessons: 8,
-  },
-  {
-    id: 'ma-legal-framework',
-    title: 'M&A Legal Framework',
-    instructor: 'Emily Davis',
-    status: 'DRAFT',
-    students: 0,
-    created: '2024-01-05',
-    lastUpdated: '2024-01-14',
-    modules: 2,
-    lessons: 5,
-  },
-  {
-    id: 'post-acquisition-integration',
-    title: 'Post-Acquisition Integration',
-    instructor: 'Robert Wilson',
-    status: 'PENDING_REVIEW',
-    students: 0,
-    created: '2024-01-03',
-    lastUpdated: '2024-01-12',
-    modules: 4,
-    lessons: 11,
-  },
-]
+const prisma = new PrismaClient()
 
-export default function AdminCoursesPage() {
-  return (
+export default async function AdminCoursesPage() {
+  // Check authentication and permissions
+  try {
+    const session = await SessionManager.requireAuth()
+    
+    if (!PermissionManager.canAccessAdminPanel(session.permissions)) {
+      redirect('/dashboard?error=unauthorized')
+    }
+
+    if (!PermissionManager.hasPermission(session.permissions, PermissionType.COURSE_VIEW)) {
+      redirect('/admin?error=insufficient-permissions')
+    }
+
+    // Fetch all courses with details
+    const courses = await prisma.course.findMany({
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        modules: {
+          include: {
+            lessons: true
+          }
+        },
+        _count: {
+          select: {
+            enrollments: true
+          }
+        }
+      },
+      orderBy: [
+        { status: 'asc' },
+        { updatedAt: 'desc' }
+      ]
+    })
+
+    // Calculate stats
+    const stats = {
+      total: courses.length,
+      published: courses.filter(c => c.status === CourseStatus.PUBLISHED).length,
+      pending: courses.filter(c => c.status === CourseStatus.DRAFT).length,
+      totalStudents: courses.reduce((sum, course) => sum + course._count.enrollments, 0)
+    }
+
+    return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
@@ -122,17 +116,17 @@ export default function AdminCoursesPage() {
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
-            <p className="text-xs text-muted-foreground">3 published</p>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">{stats.published} published</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <CardTitle className="text-sm font-medium">Published</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">Needs approval</p>
+            <div className="text-2xl font-bold">{stats.published}</div>
+            <p className="text-xs text-muted-foreground">Live courses</p>
           </CardContent>
         </Card>
         <Card>
@@ -140,7 +134,7 @@ export default function AdminCoursesPage() {
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,691</div>
+            <div className="text-2xl font-bold">{stats.totalStudents}</div>
             <p className="text-xs text-muted-foreground">Across all courses</p>
           </CardContent>
         </Card>
@@ -149,7 +143,7 @@ export default function AdminCoursesPage() {
             <CardTitle className="text-sm font-medium">Drafts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
+            <div className="text-2xl font-bold">{stats.pending}</div>
             <p className="text-xs text-muted-foreground">In progress</p>
           </CardContent>
         </Card>
@@ -165,71 +159,69 @@ export default function AdminCoursesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {adminCourses.map((course) => (
-              <div key={course.id} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-lg">{course.title}</h3>
-                      <Badge 
-                        variant={
-                          course.status === 'PUBLISHED' ? 'default' : 
-                          course.status === 'PENDING_REVIEW' ? 'secondary' : 
-                          'outline'
-                        }
-                      >
-                        {course.status.replace('_', ' ').toLowerCase()}
-                      </Badge>
+            {courses.map((course) => {
+              const totalLessons = course.modules.reduce((sum, module) => sum + module.lessons.length, 0)
+              
+              return (
+                <div key={course.id} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-lg">{course.title}</h3>
+                        <Badge 
+                          variant={
+                            course.status === CourseStatus.PUBLISHED ? 'default' : 
+                            course.status === CourseStatus.DRAFT ? 'secondary' : 
+                            'outline'
+                          }
+                        >
+                          {course.status.toLowerCase()}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          <span>By {course.author.name || course.author.email}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="h-4 w-4" />
+                          <span>{course.modules.length} modules, {totalLessons} lessons</span>
+                        </div>
+                        <div>
+                          {course._count.enrollments.toLocaleString()} students
+                        </div>
+                        <div>
+                          Updated {new Date(course.updatedAt).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>By {course.instructor}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="h-4 w-4" />
-                        <span>{course.modules} modules, {course.lessons} lessons</span>
-                      </div>
-                      <div>
-                        {course.students.toLocaleString()} students
-                      </div>
-                      <div>
-                        Updated {course.lastUpdated}
-                      </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Link href={`/courses/${course.id}`}>
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/instructor/courses/${course.id}/edit`}>
+                        <Button size="sm" variant="outline">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button size="sm" variant="outline">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {course.status === 'PENDING_REVIEW' && (
-                      <>
-                        <Button size="sm" variant="outline" className="text-green-600">
-                          Approve
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600">
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                    <Link href={`/courses/${course.id}`}>
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href={`/instructor/courses/${course.id}/edit`}>
-                      <Button size="sm" variant="outline">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button size="sm" variant="outline">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </CardContent>
       </Card>
     </div>
   )
+  } catch (error) {
+    console.error('Error in AdminCoursesPage:', error)
+    redirect('/login')
+  }
 }
