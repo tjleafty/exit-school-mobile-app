@@ -264,7 +264,7 @@ export default function CalendarPage() {
     }
   }
 
-  const formatEventTime = (event: CalendarEvent) => {
+  const formatEventTime = (event: CalendarViewEvent) => {
     if (event.allDay) {
       return 'All day'
     }
