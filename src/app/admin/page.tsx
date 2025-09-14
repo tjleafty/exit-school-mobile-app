@@ -152,15 +152,19 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Debug Info - Only show if DEBUG_AUTH is true */}
-      {process.env.DEBUG_AUTH === 'true' && (
+      {/* Debug Info - Always show for troubleshooting */}
+      {true && (
         <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-orange-600" />
               Authentication Debug Info
             </CardTitle>
-            <CardDescription>Debug information for troubleshooting Manage Users issue</CardDescription>
+            <CardDescription>
+              Debug information for troubleshooting Manage Users issue | 
+              DEBUG_AUTH: {process.env.DEBUG_AUTH || 'not set'} | 
+              NODE_ENV: {process.env.NODE_ENV}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm">
