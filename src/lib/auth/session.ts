@@ -66,102 +66,133 @@ export class SessionManager {
   }
 
   static async getSession(): Promise<AuthSession | null> {
-    const cookieStore = cookies()
-    const token = cookieStore.get(this.SESSION_COOKIE)?.value
+    try {
+      const cookieStore = cookies()
+      const token = cookieStore.get(this.SESSION_COOKIE)?.value
 
-    if (!token) {
+      if (!token) {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getSession: No token found in cookies')
+        }
+        return null
+      }
+
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSession: Token found, calling getSessionByToken')
+      }
+      
+      return await this.getSessionByToken(token)
+    } catch (error) {
+      console.error('SessionManager.getSession: Error accessing cookies or session:', error)
       return null
     }
-
-    return this.getSessionByToken(token)
   }
 
   static async getSessionByToken(token: string): Promise<AuthSession | null> {
-    const session = await prisma.session.findUnique({
-      where: { token }
-    })
-
-    if (!session || session.expiresAt < new Date()) {
-      if (session) {
-        await prisma.session.delete({ where: { token } })
+    try {
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSessionByToken: Looking up session for token')
       }
-      return null
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      include: {
-        permissions: {
-          include: {
-            permission: true
-          },
-          where: {
-            granted: true,
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } }
-            ]
-          }
-        },
-        courseAccess: true,
-        toolAccess: true
-      }
-    })
-
-    if (!user || !user.isActive || user.status !== UserStatus.ACTIVE) {
-      await this.destroySession(token)
-      return null
-    }
-
-    // Build permission check object
-    const rolePermissions = PermissionManager.getUserPermissions(user.role)
-    const userPermissions = user.permissions.map(p => p.permission.name)
-    
-    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-      console.log('SessionManager: Building permissions for user:', {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        rolePermissions,
-        userPermissions,
-        totalPermissions: [...rolePermissions, ...userPermissions]
+      
+      const session = await prisma.session.findUnique({
+        where: { token }
       })
-    }
-    
-    const permissions: PermissionCheck = {
-      userId: user.id,
-      role: user.role,
-      permissions: [
-        // Role-based permissions
-        ...rolePermissions,
-        // Individual user permissions
-        ...userPermissions
-      ],
-      courseAccess: user.courseAccess.map(ca => ({
-        courseId: ca.courseId,
-        canView: ca.canView,
-        canEdit: ca.canEdit
-      })),
-      toolAccess: user.toolAccess
-        .filter(ta => ta.canAccess && (!ta.expiresAt || ta.expiresAt > new Date()))
-        .map(ta => ({
-          toolName: ta.toolName,
-          canAccess: ta.canAccess
-        }))
-    }
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+      if (!session || session.expiresAt < new Date()) {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getSessionByToken: Session expired or not found')
+        }
+        if (session) {
+          await prisma.session.delete({ where: { token } })
+        }
+        return null
+      }
+
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSessionByToken: Valid session found, fetching user data')
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        include: {
+          permissions: {
+            include: {
+              permission: true
+            },
+            where: {
+              granted: true,
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: new Date() } }
+              ]
+            }
+          },
+          courseAccess: true,
+          toolAccess: true
+        }
+      })
+
+      if (!user || !user.isActive || user.status !== UserStatus.ACTIVE) {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getSessionByToken: User not found, inactive, or not active status')
+        }
+        await this.destroySession(token)
+        return null
+      }
+
+      // Build permission check object
+      const rolePermissions = PermissionManager.getUserPermissions(user.role)
+      const userPermissions = user.permissions.map(p => p.permission.name)
+      
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager: Building permissions for user:', {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+          rolePermissions,
+          userPermissions,
+          totalPermissions: [...rolePermissions, ...userPermissions]
+        })
+      }
+
+      const permissions: PermissionCheck = {
+        userId: user.id,
         role: user.role,
-        status: user.status,
-        isActive: user.isActive,
-        isSuperUser: user.isSuperUser
-      },
-      permissions,
-      expires: session.expiresAt
+        permissions: [
+          // Role-based permissions
+          ...rolePermissions,
+          // Individual user permissions
+          ...userPermissions
+        ],
+        courseAccess: user.courseAccess.map(ca => ({
+          courseId: ca.courseId,
+          canView: ca.canView,
+          canEdit: ca.canEdit
+        })),
+        toolAccess: user.toolAccess
+          .filter(ta => ta.canAccess && (!ta.expiresAt || ta.expiresAt > new Date()))
+          .map(ta => ({
+            toolName: ta.toolName,
+            canAccess: ta.canAccess
+          }))
+      }
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+          isActive: user.isActive,
+          isSuperUser: user.isSuperUser
+        },
+        permissions,
+        expires: session.expiresAt
+      }
+    } catch (error) {
+      console.error('SessionManager.getSessionByToken: Database error:', error)
+      return null
     }
   }
 
