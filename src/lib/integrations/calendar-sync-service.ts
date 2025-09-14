@@ -152,7 +152,7 @@ export class CalendarSyncService {
         const existingEvent = await prisma.calendarEvent.findFirst({
           where: {
             externalEventId: googleEvent.id,
-            syncedWith: { has: CalendarProvider.GOOGLE }
+            syncedWith: { contains: CalendarProvider.GOOGLE }
           }
         })
 
@@ -177,7 +177,7 @@ export class CalendarSyncService {
         where: {
           createdById: userId,
           NOT: {
-            syncedWith: { has: CalendarProvider.GOOGLE }
+            syncedWith: { contains: CalendarProvider.GOOGLE }
           }
         }
       })
@@ -205,7 +205,7 @@ export class CalendarSyncService {
             where: { id: event.id },
             data: {
               externalEventId: createdEvent.id,
-              syncedWith: [...(event.syncedWith || []), CalendarProvider.GOOGLE]
+              syncedWith: JSON.stringify([...(event.syncedWith ? JSON.parse(event.syncedWith) : []), CalendarProvider.GOOGLE])
             }
           })
         }
@@ -254,7 +254,7 @@ export class CalendarSyncService {
           type: 'MEETING',
           createdById: userId,
           externalEventId: googleEvent.id,
-          syncedWith: [CalendarProvider.GOOGLE]
+          syncedWith: JSON.stringify([CalendarProvider.GOOGLE])
         }
       })
     } catch (error) {
@@ -404,7 +404,7 @@ export class CalendarSyncService {
         const existingEvent = await prisma.calendarEvent.findFirst({
           where: {
             externalEventId: outlookEvent.id,
-            syncedWith: { has: CalendarProvider.OUTLOOK }
+            syncedWith: { contains: CalendarProvider.OUTLOOK }
           }
         })
 
@@ -426,7 +426,7 @@ export class CalendarSyncService {
         where: {
           createdById: userId,
           NOT: {
-            syncedWith: { has: CalendarProvider.OUTLOOK }
+            syncedWith: { contains: CalendarProvider.OUTLOOK }
           }
         }
       })
@@ -453,7 +453,7 @@ export class CalendarSyncService {
             where: { id: event.id },
             data: {
               externalEventId: createdEvent.id,
-              syncedWith: [...(event.syncedWith || []), CalendarProvider.OUTLOOK]
+              syncedWith: JSON.stringify([...(event.syncedWith ? JSON.parse(event.syncedWith) : []), CalendarProvider.OUTLOOK])
             }
           })
         }
@@ -501,7 +501,7 @@ export class CalendarSyncService {
           type: 'MEETING',
           createdById: userId,
           externalEventId: outlookEvent.id,
-          syncedWith: [CalendarProvider.OUTLOOK]
+          syncedWith: JSON.stringify([CalendarProvider.OUTLOOK])
         }
       })
     } catch (error) {

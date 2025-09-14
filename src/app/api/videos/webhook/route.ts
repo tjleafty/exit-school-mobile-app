@@ -13,8 +13,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
     }
 
+    // Convert headers to Record<string, string>
+    const headersRecord: Record<string, string> = {}
+    request.headers.forEach((value, key) => {
+      headersRecord[key] = value
+    })
+
     // Verify webhook signature
-    if (!MuxService.verifyWebhookSignature(body, signature)) {
+    if (!MuxService.verifyWebhookSignature(body, headersRecord)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 

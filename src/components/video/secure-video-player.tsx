@@ -316,7 +316,6 @@ export default function SecureVideoPlayer({
               src={videoData.playbackUrl}
               poster={videoData.thumbnailUrl}
               autoPlay={autoPlay}
-              controls
               style={{ 
                 width: '100%', 
                 height: '100%',

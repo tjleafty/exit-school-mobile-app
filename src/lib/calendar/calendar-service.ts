@@ -397,8 +397,7 @@ export class CalendarService {
       }))
 
       await prisma.eventAttendee.createMany({
-        data: attendeeData,
-        skipDuplicates: true
+        data: attendeeData
       })
 
       return { success: true }

@@ -52,7 +52,7 @@ export class MuxService {
 
   static async getAsset(assetId: string): Promise<MuxAssetInfo | null> {
     try {
-      const asset = await mux.video.assets.get(assetId)
+      const asset = await mux.video.assets.retrieve(assetId)
       
       return {
         id: asset.id,
@@ -84,7 +84,7 @@ export class MuxService {
 
   static async deleteAsset(assetId: string): Promise<boolean> {
     try {
-      await mux.video.assets.del(assetId)
+      await mux.video.assets.delete(assetId)
       return true
     } catch (error) {
       console.error('Failed to delete Mux asset:', error)
@@ -92,28 +92,28 @@ export class MuxService {
     }
   }
 
-  static generateSignedPlaybackUrl(playbackId: string, options?: {
+  static async generateSignedPlaybackUrl(playbackId: string, options?: {
     expiresIn?: number // seconds, default 1 hour
     type?: 'video' | 'thumbnail' | 'gif'
-  }): string {
+  }): Promise<string> {
     const expiresIn = options?.expiresIn || 3600 // 1 hour default
     const type = options?.type || 'video'
     
     try {
       if (type === 'video') {
-        return Mux.utils.signPlaybackId(playbackId, {
+        return await mux.jwt.signPlaybackId(playbackId, {
           type: 'video',
-          expiration: Math.floor(Date.now() / 1000) + expiresIn,
+          expiration: `${expiresIn}s`,
         })
       } else if (type === 'thumbnail') {
-        return Mux.utils.signPlaybackId(playbackId, {
+        return await mux.jwt.signPlaybackId(playbackId, {
           type: 'thumbnail',
-          expiration: Math.floor(Date.now() / 1000) + expiresIn,
+          expiration: `${expiresIn}s`,
         })
       } else {
-        return Mux.utils.signPlaybackId(playbackId, {
+        return await mux.jwt.signPlaybackId(playbackId, {
           type: 'gif',
-          expiration: Math.floor(Date.now() / 1000) + expiresIn,
+          expiration: `${expiresIn}s`,
         })
       }
     } catch (error) {
@@ -122,14 +122,15 @@ export class MuxService {
     }
   }
 
-  static verifyWebhookSignature(body: string, signature: string): boolean {
+  static verifyWebhookSignature(body: string, headers: Record<string, string>): boolean {
     if (!process.env.MUX_WEBHOOK_SECRET) {
       console.error('MUX_WEBHOOK_SECRET not configured')
       return false
     }
 
     try {
-      return Mux.utils.verifyWebhookSignature(body, signature, process.env.MUX_WEBHOOK_SECRET)
+      mux.webhooks.verifySignature(body, headers, process.env.MUX_WEBHOOK_SECRET || '')
+      return true
     } catch (error) {
       console.error('Webhook signature verification failed:', error)
       return false
