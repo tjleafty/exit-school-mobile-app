@@ -35,8 +35,30 @@ const MOCK_USERS_CONFIG = [
 // Cache for hashed passwords (will be generated on first use)
 let MOCK_USERS: any[] | null = null
 
-// Simple in-memory session storage for demo
+// Simple in-memory session storage for demo (will be empty in serverless functions)
 const sessions = new Map<string, { userId: string; expiresAt: Date }>()
+
+// JWT-style session token encoding for serverless persistence
+function encodeSessionToken(userId: string, expiresAt: Date): string {
+  const payload = { userId, expiresAt: expiresAt.getTime() }
+  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64')
+  return `sess_${encoded}`
+}
+
+function decodeSessionToken(token: string): { userId: string; expiresAt: Date } | null {
+  try {
+    if (!token.startsWith('sess_')) return null
+    const encoded = token.substring(5)
+    const decoded = Buffer.from(encoded, 'base64').toString('utf8')
+    const payload = JSON.parse(decoded)
+    return {
+      userId: payload.userId,
+      expiresAt: new Date(payload.expiresAt)
+    }
+  } catch {
+    return null
+  }
+}
 
 async function initializeMockUsers() {
   if (MOCK_USERS) return MOCK_USERS
@@ -79,10 +101,11 @@ export class MockAuthService {
       return { success: false, error: 'Invalid email or password' }
     }
 
-    // Create session token
-    const sessionToken = this.generateSessionToken()
+    // Create session token with embedded data for serverless persistence
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    const sessionToken = encodeSessionToken(user.id, expiresAt)
     
+    // Also store in memory for local development
     sessions.set(sessionToken, {
       userId: user.id,
       expiresAt
@@ -104,13 +127,43 @@ export class MockAuthService {
   }
 
   static async validateSession(sessionToken: string) {
-    const session = sessions.get(sessionToken)
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('MockAuth: validateSession called with token:', {
+        tokenLength: sessionToken.length,
+        tokenPreview: sessionToken.substring(0, 10) + '...',
+        totalSessions: sessions.size,
+        allSessionKeys: Array.from(sessions.keys()).map(k => k.substring(0, 10) + '...')
+      })
+    }
+    
+    // First try in-memory session (for local development)
+    let session = sessions.get(sessionToken)
+    
+    // If not found in memory, try to decode from token (for serverless)
     if (!session) {
-      return null
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('MockAuth: Session not found in memory, trying to decode from token')
+      }
+      
+      const decoded = decodeSessionToken(sessionToken)
+      if (decoded) {
+        session = decoded
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('MockAuth: Successfully decoded session from token for userId:', decoded.userId)
+        }
+      } else {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('MockAuth: Failed to decode session token')
+        }
+        return null
+      }
     }
 
     if (session.expiresAt < new Date()) {
       sessions.delete(sessionToken)
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('MockAuth: Session expired, deleted')
+      }
       return null
     }
 
@@ -119,7 +172,14 @@ export class MockAuthService {
 
     const user = MOCK_USERS!.find(u => u.id === session.userId)
     if (!user) {
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('MockAuth: User not found for session')
+      }
       return null
+    }
+
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('MockAuth: Session validation successful for user:', user.email)
     }
 
     return {
