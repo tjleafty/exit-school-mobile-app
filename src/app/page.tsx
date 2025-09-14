@@ -1,8 +1,33 @@
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BookOpen, Users, Award, PlayCircle } from 'lucide-react'
 import Link from 'next/link'
+import { SessionManager } from '@/lib/auth/session'
+import { redirect } from 'next/navigation'
 
-export default function Home() {
+export default async function Home() {
+  // Check if user is already logged in
+  let isAuthenticated = false
+  let userDashboard = '/dashboard'
+  
+  try {
+    const session = await SessionManager.getSession()
+    if (session) {
+      isAuthenticated = true
+      // Redirect to appropriate dashboard based on role
+      switch (session.user.role) {
+        case 'ADMIN':
+          redirect('/admin')
+        case 'INSTRUCTOR':
+          redirect('/instructor')
+        case 'STUDENT':
+        default:
+          redirect('/dashboard')
+      }
+    }
+  } catch (error) {
+    // User not authenticated, continue to show landing page
+    console.log('Home page: User not authenticated, showing landing page')
+  }
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
