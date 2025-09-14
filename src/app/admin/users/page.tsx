@@ -9,13 +9,40 @@ const prisma = new PrismaClient()
 export default async function AdminUsersPage() {
   // Check authentication and permissions
   try {
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('AdminUsersPage: Starting auth check...')
+    }
     const session = await SessionManager.requireAuth()
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('AdminUsersPage: Session obtained:', { 
+        userId: session.user.id, 
+        email: session.user.email, 
+        role: session.user.role,
+        permissions: session.permissions.permissions 
+      })
+    }
     
-    if (!PermissionManager.canAccessAdminPanel(session.permissions)) {
+    const canAccessAdmin = PermissionManager.canAccessAdminPanel(session.permissions)
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('AdminUsersPage: Can access admin panel:', canAccessAdmin)
+    }
+    
+    if (!canAccessAdmin) {
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('AdminUsersPage: Redirecting to dashboard - no admin access')
+      }
       redirect('/dashboard?error=unauthorized')
     }
 
-    if (!PermissionManager.hasPermission(session.permissions, PermissionType.USER_VIEW)) {
+    const hasUserView = PermissionManager.hasPermission(session.permissions, PermissionType.USER_VIEW)
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('AdminUsersPage: Has USER_VIEW permission:', hasUserView)
+    }
+    
+    if (!hasUserView) {
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('AdminUsersPage: Redirecting to admin - insufficient permissions')
+      }
       redirect('/admin?error=insufficient-permissions')
     }
 

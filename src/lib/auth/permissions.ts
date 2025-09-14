@@ -46,6 +46,13 @@ export class PermissionManager {
     userPermissions: PermissionCheck,
     requiredPermission: PermissionType
   ): boolean {
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('PermissionManager.hasPermission check:', {
+        requiredPermission,
+        userPermissions: userPermissions.permissions,
+        hasPermission: userPermissions.permissions.includes(requiredPermission)
+      })
+    }
     // Check if user has the permission directly
     return userPermissions.permissions.includes(requiredPermission)
   }

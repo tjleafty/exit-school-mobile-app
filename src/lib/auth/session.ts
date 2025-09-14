@@ -114,14 +114,28 @@ export class SessionManager {
     }
 
     // Build permission check object
+    const rolePermissions = PermissionManager.getUserPermissions(user.role)
+    const userPermissions = user.permissions.map(p => p.permission.name)
+    
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('SessionManager: Building permissions for user:', {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        rolePermissions,
+        userPermissions,
+        totalPermissions: [...rolePermissions, ...userPermissions]
+      })
+    }
+    
     const permissions: PermissionCheck = {
       userId: user.id,
       role: user.role,
       permissions: [
         // Role-based permissions
-        ...PermissionManager.getUserPermissions(user.role),
+        ...rolePermissions,
         // Individual user permissions
-        ...user.permissions.map(p => p.permission.name)
+        ...userPermissions
       ],
       courseAccess: user.courseAccess.map(ca => ({
         courseId: ca.courseId,
@@ -165,9 +179,21 @@ export class SessionManager {
   }
 
   static async requireAuth(): Promise<AuthSession> {
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('SessionManager.requireAuth: Starting...')
+    }
     const session = await this.getSession()
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('SessionManager.requireAuth: Session result:', session ? 'found' : 'not found')
+    }
     if (!session) {
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.requireAuth: No session found, throwing error')
+      }
       throw new Error('Authentication required')
+    }
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+      console.log('SessionManager.requireAuth: Returning session for user:', session.user.email)
     }
     return session
   }
