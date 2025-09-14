@@ -23,25 +23,26 @@ export default async function AdminUsersPage() {
     }
     
     const canAccessAdmin = PermissionManager.canAccessAdminPanel(session.permissions)
-    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-      console.log('AdminUsersPage: Can access admin panel:', canAccessAdmin)
-    }
-    
-    if (!canAccessAdmin) {
-      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-        console.log('AdminUsersPage: Redirecting to dashboard - no admin access')
-      }
-      redirect('/dashboard?error=unauthorized')
-    }
-
     const hasUserView = PermissionManager.hasPermission(session.permissions, PermissionType.USER_VIEW)
+    
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-      console.log('AdminUsersPage: Has USER_VIEW permission:', hasUserView)
+      console.log('AdminUsersPage: Permissions check:', {
+        canAccessAdmin,
+        hasUserView,
+        bothRequired: canAccessAdmin && hasUserView,
+        userRole: session.user.role,
+        allPermissions: session.permissions.permissions
+      })
     }
     
-    if (!hasUserView) {
+    // Both permissions are required for /admin/users
+    if (!canAccessAdmin || !hasUserView) {
       if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-        console.log('AdminUsersPage: Redirecting to admin - insufficient permissions')
+        console.log('AdminUsersPage: Insufficient permissions - redirecting to admin')
+        console.log('AdminUsersPage: Missing permissions:', {
+          needsAdminAccess: !canAccessAdmin,
+          needsUserView: !hasUserView
+        })
       }
       redirect('/admin?error=insufficient-permissions')
     }

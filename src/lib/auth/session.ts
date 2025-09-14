@@ -151,7 +151,9 @@ export class SessionManager {
           role: user.role,
           rolePermissions,
           userPermissions,
-          totalPermissions: [...rolePermissions, ...userPermissions]
+          totalPermissions: [...rolePermissions, ...userPermissions],
+          hasAdminPanelAccess: rolePermissions.includes('ADMIN_PANEL_ACCESS') || userPermissions.includes('ADMIN_PANEL_ACCESS'),
+          hasUserView: rolePermissions.includes('USER_VIEW') || userPermissions.includes('USER_VIEW')
         })
       }
 
