@@ -98,10 +98,15 @@ export default async function AdminDashboard() {
   // Get authentication debug info
   let debugInfo = null
   try {
+    console.log('AdminDashboard: Starting session check...')
     const session = await SessionManager.getSession()
+    console.log('AdminDashboard: Session result:', session ? 'found' : 'not found')
+    
     if (session) {
       const canAccessAdmin = PermissionManager.canAccessAdminPanel(session.permissions)
       const hasUserView = PermissionManager.hasPermission(session.permissions, PermissionType.USER_VIEW)
+      
+      console.log('AdminDashboard: Permission checks:', { canAccessAdmin, hasUserView })
       
       debugInfo = {
         hasSession: true,
@@ -120,9 +125,31 @@ export default async function AdminDashboard() {
         }
       }
     } else {
-      debugInfo = { hasSession: false, error: 'No session found' }
+      console.log('AdminDashboard: No session found - checking cookies directly')
+      // Try to get cookies directly for debugging
+      try {
+        const { cookies } = await import('next/headers')
+        const cookieStore = cookies()
+        const sessionToken = cookieStore.get('session-token')
+        debugInfo = { 
+          hasSession: false, 
+          error: 'No session found',
+          cookieDebug: {
+            sessionTokenExists: !!sessionToken,
+            sessionTokenLength: sessionToken?.value?.length || 0,
+            allCookies: cookieStore.getAll().map(c => ({ name: c.name, hasValue: !!c.value }))
+          }
+        }
+      } catch (cookieError) {
+        debugInfo = { 
+          hasSession: false, 
+          error: 'No session found',
+          cookieError: cookieError instanceof Error ? cookieError.message : 'Unknown cookie error'
+        }
+      }
     }
   } catch (error) {
+    console.error('AdminDashboard: Error during authentication:', error)
     debugInfo = { 
       hasSession: false, 
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -231,6 +258,24 @@ export default async function AdminDashboard() {
               {debugInfo?.error && (
                 <div className="text-red-600">
                   <p><strong>Error:</strong> {debugInfo.error}</p>
+                  {debugInfo.cookieDebug && (
+                    <div className="mt-2 text-xs">
+                      <p><strong>Cookie Debug:</strong></p>
+                      <div className="ml-4 space-y-1">
+                        <p>Session Token Exists: {debugInfo.cookieDebug.sessionTokenExists ? 'Yes' : 'No'}</p>
+                        <p>Token Length: {debugInfo.cookieDebug.sessionTokenLength}</p>
+                        <p>All Cookies ({debugInfo.cookieDebug.allCookies.length}):</p>
+                        <div className="ml-4">
+                          {debugInfo.cookieDebug.allCookies.map((cookie, idx) => (
+                            <div key={idx}>• {cookie.name}: {cookie.hasValue ? 'has value' : 'empty'}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {debugInfo.cookieError && (
+                    <p className="mt-2 text-xs"><strong>Cookie Error:</strong> {debugInfo.cookieError}</p>
+                  )}
                   {debugInfo.stack && (
                     <details className="mt-2">
                       <summary className="cursor-pointer">Stack Trace</summary>

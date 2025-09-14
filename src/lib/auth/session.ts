@@ -69,6 +69,18 @@ export class SessionManager {
     try {
       const cookieStore = cookies()
       const token = cookieStore.get(this.SESSION_COOKIE)?.value
+      const allCookies = cookieStore.getAll()
+
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSession: Cookie debug info:', {
+          sessionCookieName: this.SESSION_COOKIE,
+          tokenExists: !!token,
+          tokenLength: token?.length || 0,
+          tokenPreview: token ? `${token.substring(0, 8)}...` : 'none',
+          allCookieNames: allCookies.map(c => c.name),
+          totalCookies: allCookies.length
+        })
+      }
 
       if (!token) {
         if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
