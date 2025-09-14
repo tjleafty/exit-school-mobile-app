@@ -322,7 +322,7 @@ export default function SecureVideoPlayer({
                 height: '100%',
                 '--controls': '#ffffff',
                 '--secondary': '#000000',
-              }}
+              } as React.CSSProperties}
               onTimeUpdate={handleTimeUpdate}
               onEnded={handleEnded}
               onPlay={handlePlay}
