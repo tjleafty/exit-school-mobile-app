@@ -17,7 +17,7 @@ import {
   Filter,
   Search
 } from 'lucide-react'
-import { EventType, EventStatus } from '@prisma/client'
+import { EventType, EventStatus, RecurrenceType } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
 export interface CalendarEvent {
@@ -30,10 +30,19 @@ export interface CalendarEvent {
   allDay: boolean
   type: EventType
   status: EventStatus
+  isRecurring: boolean
+  recurrenceType: RecurrenceType
   zoomJoinUrl?: string
+  zoomStartUrl?: string
+  zoomPassword?: string
   course?: {
     id: string
     title: string
+  }
+  createdBy: {
+    id: string
+    name: string
+    email: string
   }
   attendees: {
     user: {
@@ -42,6 +51,17 @@ export interface CalendarEvent {
       email: string
     }
     status: string
+    joinedAt?: Date
+    leftAt?: Date
+  }[]
+  parentEvent?: {
+    id: string
+    title: string
+  }
+  childEvents?: {
+    id: string
+    startTime: Date
+    endTime: Date
   }[]
 }
 
