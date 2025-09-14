@@ -90,10 +90,23 @@ export class SessionManager {
       }
 
       if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-        console.log('SessionManager.getSession: Token found, calling getSessionByToken')
+        console.log('SessionManager.getSession: Token found, trying database first then mock fallback')
       }
       
-      return await this.getSessionByToken(token)
+      // Try database first, fall back to mock auth if database fails
+      const databaseSession = await this.getSessionByToken(token)
+      if (databaseSession) {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getSession: Found session in database')
+        }
+        return databaseSession
+      }
+
+      // Fall back to mock auth if database session not found
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSession: Database session not found, checking mock auth')
+      }
+      return await this.getMockSession(token)
     } catch (error) {
       console.error('SessionManager.getSession: Error accessing cookies or session:', error)
       return null
@@ -309,6 +322,56 @@ export class SessionManager {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     return result
+  }
+
+  static async getMockSession(token: string): Promise<AuthSession | null> {
+    try {
+      const { MockAuthService } = await import('./mock-auth')
+      
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getMockSession: Checking mock auth service')
+      }
+      
+      const mockUser = await MockAuthService.validateSession(token)
+      if (!mockUser) {
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getMockSession: Mock session not found or expired')
+        }
+        return null
+      }
+
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getMockSession: Mock session found for user:', mockUser.email)
+      }
+
+      // Build permission check object for mock user
+      const rolePermissions = PermissionManager.getUserPermissions(mockUser.role)
+      
+      const permissions: PermissionCheck = {
+        userId: mockUser.id,
+        role: mockUser.role,
+        permissions: rolePermissions, // Mock users get role-based permissions only
+        courseAccess: [], // Mock users have no specific course access
+        toolAccess: [] // Mock users have no specific tool access
+      }
+
+      return {
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          name: mockUser.name,
+          role: mockUser.role,
+          status: 'ACTIVE' as any, // Mock users are always active
+          isActive: true,
+          isSuperUser: mockUser.isSuperUser
+        },
+        permissions,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
+      }
+    } catch (error) {
+      console.error('SessionManager.getMockSession: Error:', error)
+      return null
+    }
   }
 
   static async cleanExpiredSessions(): Promise<void> {
