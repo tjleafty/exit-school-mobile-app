@@ -27,15 +27,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate modules and lessons
-    for (const module of modules) {
-      if (!module.title) {
+    for (const courseModule of modules) {
+      if (!courseModule.title) {
         return NextResponse.json(
           { error: 'All modules must have a title' },
           { status: 400 }
         )
       }
 
-      for (const lesson of module.lessons) {
+      for (const lesson of courseModule.lessons) {
         if (!lesson.title) {
           return NextResponse.json(
             { error: 'All lessons must have a title' },
@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
     const courseId = `course_${Date.now()}`
     
     // Process the uploaded files and create database records
-    const processedModules = modules.map((module: any) => ({
-      ...module,
-      lessons: module.lessons.map((lesson: any) => ({
+    const processedModules = modules.map((courseModule: any) => ({
+      ...courseModule,
+      lessons: courseModule.lessons.map((lesson: any) => ({
         ...lesson,
         // Store the video and resource file metadata
         videoUrl: lesson.videoFile?.url,

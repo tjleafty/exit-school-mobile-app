@@ -177,14 +177,14 @@ export default function NewCoursePage() {
     }
 
     // Validate that all modules have titles
-    for (const module of modules) {
-      if (!module.title.trim()) {
+    for (const courseModule of modules) {
+      if (!courseModule.title.trim()) {
         alert('All modules must have a title')
         return
       }
 
       // Validate lessons
-      for (const lesson of module.lessons) {
+      for (const lesson of courseModule.lessons) {
         if (!lesson.title.trim()) {
           alert('All lessons must have a title')
           return
