@@ -45,37 +45,6 @@ export default function InstructorAnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('course')
 
-  useEffect(() => {
-    fetchCourses()
-  }, [])
-
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchCourseData()
-    }
-  }, [selectedCourse, fetchCourseData])
-
-  useEffect(() => {
-    if (selectedLesson) {
-      fetchLessonMetrics()
-    }
-  }, [selectedLesson, fetchLessonMetrics])
-
-  const fetchCourses = async () => {
-    try {
-      const response = await fetch('/api/courses?instructorOnly=true')
-      if (response.ok) {
-        const data = await response.json()
-        setCourses(data.courses || [])
-        if (data.courses?.length > 0) {
-          setSelectedCourse(data.courses[0].id)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error)
-    }
-  }
-
   const fetchCourseData = useCallback(async () => {
     if (!selectedCourse) return
     
@@ -149,6 +118,37 @@ export default function InstructorAnalyticsPage() {
       console.error('Error fetching lesson metrics:', error)
     }
   }, [selectedLesson])
+
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchCourseData()
+    }
+  }, [selectedCourse, fetchCourseData])
+
+  useEffect(() => {
+    if (selectedLesson) {
+      fetchLessonMetrics()
+    }
+  }, [selectedLesson, fetchLessonMetrics])
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch('/api/courses?instructorOnly=true')
+      if (response.ok) {
+        const data = await response.json()
+        setCourses(data.courses || [])
+        if (data.courses?.length > 0) {
+          setSelectedCourse(data.courses[0].id)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    }
+  }
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
