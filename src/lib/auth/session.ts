@@ -103,16 +103,45 @@ export class SessionManager {
   static async getSessionByToken(token: string): Promise<AuthSession | null> {
     try {
       if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-        console.log('SessionManager.getSessionByToken: Looking up session for token')
+        console.log('SessionManager.getSessionByToken: Looking up session for token:', {
+          tokenLength: token.length,
+          tokenPreview: `${token.substring(0, 8)}...`,
+          databaseUrl: process.env.DATABASE_URL ? 'set' : 'missing',
+          nodeEnv: process.env.NODE_ENV
+        })
+      }
+
+      // First, let's check if we can connect to the database at all
+      try {
+        const sessionCount = await prisma.session.count()
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+          console.log('SessionManager.getSessionByToken: Database connection test:', {
+            totalSessions: sessionCount
+          })
+        }
+      } catch (dbError) {
+        console.error('SessionManager.getSessionByToken: Database connection failed:', dbError)
+        return null
       }
       
       const session = await prisma.session.findUnique({
         where: { token }
       })
 
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+        console.log('SessionManager.getSessionByToken: Database lookup result:', {
+          sessionFound: !!session,
+          sessionId: session?.id,
+          userId: session?.userId,
+          expiresAt: session?.expiresAt,
+          isExpired: session ? session.expiresAt < new Date() : 'N/A',
+          currentTime: new Date().toISOString()
+        })
+      }
+
       if (!session || session.expiresAt < new Date()) {
         if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
-          console.log('SessionManager.getSessionByToken: Session expired or not found')
+          console.log('SessionManager.getSessionByToken: Session expired or not found - cleaning up')
         }
         if (session) {
           await prisma.session.delete({ where: { token } })
