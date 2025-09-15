@@ -75,10 +75,10 @@ const getCourseData = (courseId: string): Course | null => {
           title: 'M&A Foundations',
           description: 'Learn the fundamental concepts and strategic importance of mergers and acquisitions',
           lessons: [
-            { id: 'lesson-intro-ma', title: 'Introduction to M&A Strategy', type: 'VIDEO', description: 'Overview of M&A strategy and its role in business growth', duration: '25 min', completed: true },
-            { id: 'lesson-types-deals', title: 'Types of Acquisition Deals', type: 'VIDEO', description: 'Understanding different types of acquisition structures', duration: '30 min', completed: true },
-            { id: 'lesson-market-analysis', title: 'Market Analysis & Opportunity Assessment', type: 'VIDEO', description: 'How to analyze markets and identify acquisition opportunities', duration: '35 min', completed: false },
-            { id: 'lesson-initial-screening', title: 'Initial Business Screening', type: 'ARTICLE', description: 'Framework for initial evaluation of potential targets', duration: '15 min', completed: false }
+            { id: 'lesson-intro-ma', title: 'Introduction to M&A Strategy', type: 'VIDEO' as const, description: 'Overview of M&A strategy and its role in business growth', duration: '25 min', completed: true },
+            { id: 'lesson-types-deals', title: 'Types of Acquisition Deals', type: 'VIDEO' as const, description: 'Understanding different types of acquisition structures', duration: '30 min', completed: true },
+            { id: 'lesson-market-analysis', title: 'Market Analysis & Opportunity Assessment', type: 'VIDEO' as const, description: 'How to analyze markets and identify acquisition opportunities', duration: '35 min', completed: false },
+            { id: 'lesson-initial-screening', title: 'Initial Business Screening', type: 'ARTICLE' as const, description: 'Framework for initial evaluation of potential targets', duration: '15 min', completed: false }
           ]
         },
         {
@@ -86,10 +86,10 @@ const getCourseData = (courseId: string): Course | null => {
           title: 'Business Valuation',
           description: 'Master the key valuation methods used in M&A transactions',
           lessons: [
-            { id: 'lesson-valuation-methods', title: 'Valuation Methods Overview', type: 'VIDEO', description: 'Introduction to different valuation approaches', duration: '28 min', completed: false },
-            { id: 'lesson-dcf-analysis', title: 'Discounted Cash Flow Analysis', type: 'VIDEO', description: 'Detailed DCF modeling for acquisitions', duration: '45 min', completed: false },
-            { id: 'lesson-comparable-analysis', title: 'Comparable Company Analysis', type: 'VIDEO', description: 'Using market comparables for valuation', duration: '32 min', completed: false },
-            { id: 'lesson-valuation-tools', title: 'Valuation Tools & Templates', type: 'ARTICLE', description: 'Practical tools and Excel templates for valuation', duration: '20 min', completed: false }
+            { id: 'lesson-valuation-methods', title: 'Valuation Methods Overview', type: 'VIDEO' as const, description: 'Introduction to different valuation approaches', duration: '28 min', completed: false },
+            { id: 'lesson-dcf-analysis', title: 'Discounted Cash Flow Analysis', type: 'VIDEO' as const, description: 'Detailed DCF modeling for acquisitions', duration: '45 min', completed: false },
+            { id: 'lesson-comparable-analysis', title: 'Comparable Company Analysis', type: 'VIDEO' as const, description: 'Using market comparables for valuation', duration: '32 min', completed: false },
+            { id: 'lesson-valuation-tools', title: 'Valuation Tools & Templates', type: 'ARTICLE' as const, description: 'Practical tools and Excel templates for valuation', duration: '20 min', completed: false }
           ]
         },
         {
@@ -97,9 +97,9 @@ const getCourseData = (courseId: string): Course | null => {
           title: 'Deal Structuring',
           description: 'Learn how to structure deals for optimal outcomes',
           lessons: [
-            { id: 'lesson-deal-structures', title: 'Common Deal Structures', type: 'VIDEO', description: 'Overview of asset vs stock deals, earnouts, and more', duration: '30 min', completed: false },
-            { id: 'lesson-financing-options', title: 'Financing Your Acquisition', type: 'VIDEO', description: 'Debt, equity, and creative financing strategies', duration: '38 min', completed: false },
-            { id: 'lesson-terms-negotiation', title: 'Key Terms & Negotiation', type: 'VIDEO', description: 'Essential terms and negotiation strategies', duration: '42 min', completed: false }
+            { id: 'lesson-deal-structures', title: 'Common Deal Structures', type: 'VIDEO' as const, description: 'Overview of asset vs stock deals, earnouts, and more', duration: '30 min', completed: false },
+            { id: 'lesson-financing-options', title: 'Financing Your Acquisition', type: 'VIDEO' as const, description: 'Debt, equity, and creative financing strategies', duration: '38 min', completed: false },
+            { id: 'lesson-terms-negotiation', title: 'Key Terms & Negotiation', type: 'VIDEO' as const, description: 'Essential terms and negotiation strategies', duration: '42 min', completed: false }
           ]
         }
       ]
@@ -125,8 +125,8 @@ const getCourseData = (courseId: string): Course | null => {
           title: 'Due Diligence Framework',
           description: 'Establish a systematic approach to due diligence',
           lessons: [
-            { id: 'lesson-dd-overview', title: 'Due Diligence Process Overview', type: 'VIDEO', description: 'Complete overview of the due diligence process', duration: '30 min', completed: false },
-            { id: 'lesson-dd-checklist', title: 'Complete Due Diligence Checklist', type: 'ARTICLE', description: 'Comprehensive checklist for all DD areas', duration: '25 min', completed: false }
+            { id: 'lesson-dd-overview', title: 'Due Diligence Process Overview', type: 'VIDEO' as const, description: 'Complete overview of the due diligence process', duration: '30 min', completed: false },
+            { id: 'lesson-dd-checklist', title: 'Complete Due Diligence Checklist', type: 'ARTICLE' as const, description: 'Comprehensive checklist for all DD areas', duration: '25 min', completed: false }
           ]
         }
       ]
