@@ -61,40 +61,66 @@ const navItems: NavItem[] = [
   },
 ]
 
+interface User {
+  id: string
+  email: string
+  name: string
+  role: string
+  isSuperUser: boolean
+  isActive: boolean
+}
+
 export function Navigation({ userRole }: { userRole?: string }) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Get user role from cookie
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`
-      const parts = value.split(`; ${name}=`)
-      if (parts.length === 2) return parts.pop()?.split(';').shift()
+    // Get user session from API
+    const fetchSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        const data = await response.json()
+        
+        if (data.authenticated && data.user) {
+          setCurrentUser(data.user)
+        } else {
+          setCurrentUser(null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch session:', error)
+        setCurrentUser(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    
-    const role = getCookie('user-role')
-    setCurrentUserRole(role || null)
+
+    fetchSession()
   }, [])
 
-  const effectiveRole = userRole || currentUserRole
+  const effectiveRole = userRole || currentUser?.role
   const filteredNavItems = navItems.filter(item => {
     if (!item.roles) return true
     return item.roles.includes(effectiveRole?.toUpperCase() || '')
   })
 
-  const handleLogout = () => {
-    // Clear cookies
-    document.cookie = 'session-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-    document.cookie = 'user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/login', { method: 'DELETE' })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+    
+    // Clear local state and redirect
+    setCurrentUser(null)
     router.push('/')
   }
 
   // Only show navigation if user is logged in
-  const isLoggedIn = effectiveRole !== null
-  const isAdmin = effectiveRole?.toUpperCase() === 'ADMIN'
+  const isLoggedIn = currentUser !== null && !isLoading
+  const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN'
 
   return (
     <>
