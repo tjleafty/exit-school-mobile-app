@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SessionManager } from '@/lib/auth/session'
 import { PermissionManager } from '@/lib/auth/permissions'
 import { PermissionType } from '@prisma/client'
-import { MuxService } from '@/lib/mux/mux-service'
+
+// Check if we're in demo mode (when real credentials aren't configured)
+const isDemoMode = !process.env.MUX_TOKEN_ID || 
+                   process.env.MUX_TOKEN_ID === 'your_mux_token_id_here' ||
+                   !process.env.MUX_TOKEN_SECRET || 
+                   process.env.MUX_TOKEN_SECRET === 'your_mux_token_secret_here'
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,26 +43,49 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`Creating Mux upload for video: ${fileName} by user: ${session.user.email}`)
+    console.log(`Creating video upload for: ${fileName} by user: ${session.user.email}`)
 
-    // Create Mux direct upload
-    const uploadResult = await MuxService.createDirectUpload({
-      corsOrigin,
-      test: process.env.NODE_ENV === 'development'
-    })
+    if (isDemoMode) {
+      // Demo mode: simulate Mux upload without real API calls
+      console.log('Demo mode: Simulating Mux video upload')
+      
+      const mockAssetId = `demo_asset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const mockUploadId = `demo_upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
+      // Create a mock upload URL that will accept the video file
+      const mockUploadUrl = `/api/demo/upload-receiver?type=video&assetId=${mockAssetId}`
+      
+      return NextResponse.json({
+        success: true,
+        uploadUrl: mockUploadUrl,
+        uploadId: mockUploadId,
+        assetId: mockAssetId,
+        fileName,
+        demo: true,
+        message: 'Demo mode: Video upload simulated. In production, this would upload to Mux.'
+      })
+    } else {
+      // Production mode: Use real Mux API
+      const { MuxService } = await import('@/lib/mux/mux-service')
+      
+      const uploadResult = await MuxService.createDirectUpload({
+        corsOrigin,
+        test: process.env.NODE_ENV === 'development'
+      })
 
-    console.log(`Mux upload created successfully:`, {
-      uploadId: uploadResult.uploadId,
-      assetId: uploadResult.assetId
-    })
+      console.log(`Mux upload created successfully:`, {
+        uploadId: uploadResult.uploadId,
+        assetId: uploadResult.assetId
+      })
 
-    return NextResponse.json({
-      success: true,
-      uploadUrl: uploadResult.uploadUrl,
-      uploadId: uploadResult.uploadId,
-      assetId: uploadResult.assetId,
-      fileName
-    })
+      return NextResponse.json({
+        success: true,
+        uploadUrl: uploadResult.uploadUrl,
+        uploadId: uploadResult.uploadId,
+        assetId: uploadResult.assetId,
+        fileName
+      })
+    }
 
   } catch (error) {
     console.error('Video upload creation failed:', error)

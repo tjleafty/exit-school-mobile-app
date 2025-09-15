@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SessionManager } from '@/lib/auth/session'
 import { PermissionManager } from '@/lib/auth/permissions'
 import { PermissionType } from '@prisma/client'
-import { R2Service } from '@/lib/cloudflare/r2-service'
+
+// Check if we're in demo mode (when real credentials aren't configured)
+const isDemoMode = !process.env.CLOUDFLARE_ACCOUNT_ID || 
+                   process.env.CLOUDFLARE_ACCOUNT_ID === 'your_cloudflare_account_id_here' ||
+                   !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || 
+                   process.env.CLOUDFLARE_R2_ACCESS_KEY_ID === 'your_r2_access_key_id_here'
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,30 +52,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`Creating R2 upload for document: ${fileName} by user: ${session.user.email}`)
+    console.log(`Creating document upload for: ${fileName} by user: ${session.user.email}`)
 
-    // Generate R2 key
-    const key = R2Service.generateKey({
-      type: 'document',
-      fileName
-    })
+    if (isDemoMode) {
+      // Demo mode: simulate R2 upload without real API calls
+      console.log('Demo mode: Simulating Cloudflare R2 document upload')
+      
+      const mockKey = `demo/documents/${Date.now()}_${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+      const mockPublicUrl = `/api/demo/files/${mockKey}`
+      
+      // Create a mock upload URL that will accept the document file
+      const mockUploadUrl = `/api/demo/upload-receiver?type=document&key=${encodeURIComponent(mockKey)}`
+      
+      return NextResponse.json({
+        success: true,
+        uploadUrl: mockUploadUrl,
+        key: mockKey,
+        publicUrl: mockPublicUrl,
+        fileName,
+        demo: true,
+        message: 'Demo mode: Document upload simulated. In production, this would upload to Cloudflare R2.'
+      })
+    } else {
+      // Production mode: Use real R2 API
+      const { R2Service } = await import('@/lib/cloudflare/r2-service')
+      
+      // Generate R2 key
+      const key = R2Service.generateKey({
+        type: 'document',
+        fileName
+      })
 
-    // Create presigned upload URL
-    const uploadResult = await R2Service.generatePresignedUploadUrl({
-      key,
-      contentType: contentType || R2Service.getContentType(fileName),
-      expiresIn: 3600 // 1 hour
-    })
+      // Create presigned upload URL
+      const uploadResult = await R2Service.generatePresignedUploadUrl({
+        key,
+        contentType: contentType || R2Service.getContentType(fileName),
+        expiresIn: 3600 // 1 hour
+      })
 
-    console.log(`R2 upload URL created successfully for key: ${key}`)
+      console.log(`R2 upload URL created successfully for key: ${key}`)
 
-    return NextResponse.json({
-      success: true,
-      uploadUrl: uploadResult.uploadUrl,
-      key: uploadResult.key,
-      publicUrl: uploadResult.publicUrl,
-      fileName
-    })
+      return NextResponse.json({
+        success: true,
+        uploadUrl: uploadResult.uploadUrl,
+        key: uploadResult.key,
+        publicUrl: uploadResult.publicUrl,
+        fileName
+      })
+    }
 
   } catch (error) {
     console.error('Document upload creation failed:', error)
