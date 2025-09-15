@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Navigation } from '@/components/navigation'
-import { GraduationCap } from 'lucide-react'
-import Link from 'next/link'
+import { Header } from '@/components/header'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,15 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="min-h-screen bg-background">
-          <header className="border-b">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-              <Link href="/" className="flex items-center space-x-2">
-                <GraduationCap className="h-6 w-6 text-primary" />
-                <span className="font-bold text-xl">Exit School</span>
-              </Link>
-              <Navigation />
-            </div>
-          </header>
+          <Header />
           <main className="container mx-auto px-4 py-8">
             {children}
           </main>

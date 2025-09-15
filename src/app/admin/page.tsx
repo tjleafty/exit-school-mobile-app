@@ -168,13 +168,13 @@ export default async function AdminDashboard() {
         </div>
         <div className="flex gap-2">
           <Link href="/admin/users">
-            <Button>Manage Users</Button>
+            <Button>Users</Button>
           </Link>
           <Link href="/admin/courses">
-            <Button variant="outline">Manage Courses</Button>
+            <Button variant="outline">Courses</Button>
           </Link>
           <Link href="/admin/tools">
-            <Button variant="outline">Manage Tools</Button>
+            <Button variant="outline">Tools</Button>
           </Link>
         </div>
       </div>
@@ -486,7 +486,7 @@ export default async function AdminDashboard() {
                 <Link href="/admin/tools">
                   <Button variant="outline" className="w-full justify-start">
                     <Wrench className="h-4 w-4 mr-2" />
-                    Manage Tools
+                    Tools
                   </Button>
                 </Link>
                 <Link href="/admin/tools/access">
