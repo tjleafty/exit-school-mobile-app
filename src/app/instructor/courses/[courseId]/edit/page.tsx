@@ -248,13 +248,31 @@ export default function EditCoursePage() {
     if (!course) return
 
     try {
-      console.log('Updating course...', {
-        ...course,
+      const updateData = {
+        title: course.title,
+        description: course.description,
         tags: courseTags,
-        status: asDraft ? 'DRAFT' : 'PUBLISHED'
+        status: asDraft ? 'DRAFT' : 'PUBLISHED',
+        modules: course.modules
+      }
+
+      console.log('Updating course...', updateData)
+
+      const response = await fetch(`/api/courses/${courseId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
       })
 
-      // Here you would make an API call to update the course
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save course')
+      }
+
+      const result = await response.json()
+      console.log('Course updated successfully:', result)
       alert(`Course ${asDraft ? 'saved as draft' : 'published'} successfully!`)
       
     } catch (error) {
@@ -284,7 +302,7 @@ export default function EditCoursePage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link href="/admin/courses">
+          <Link href="/courses">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Courses
