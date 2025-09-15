@@ -113,9 +113,9 @@ export class R2Service {
   }
 
   static getPublicUrl(key: string): string {
-    // Use the correct R2 public URL format
-    // Format: https://[bucket-name].[account-id].r2.cloudflarestorage.com/[key]
-    return `https://${this.bucketName}.${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`
+    // Use the R2 endpoint URL for public access
+    const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT!
+    return `${endpoint}/${key}`
   }
 
   static generateKey(options: {
