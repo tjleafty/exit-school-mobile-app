@@ -12,15 +12,9 @@ import {
   Edit,
   Trash2,
   MoreHorizontal,
-  Wrench,
-  Shield,
-  CheckCircle,
-  XCircle
+  Wrench
 } from 'lucide-react'
 import Link from 'next/link'
-import { SessionManager } from '@/lib/auth/session'
-import { PermissionManager } from '@/lib/auth/permissions'
-import { PermissionType } from '@prisma/client'
 
 // Mock data - replace with database fetch
 const adminData = {
@@ -95,67 +89,6 @@ const adminData = {
 }
 
 export default async function AdminDashboard() {
-  // Get authentication debug info
-  let debugInfo = null
-  try {
-    console.log('AdminDashboard: Starting session check...')
-    const session = await SessionManager.getSession()
-    console.log('AdminDashboard: Session result:', session ? 'found' : 'not found')
-    
-    if (session) {
-      const canAccessAdmin = PermissionManager.canAccessAdminPanel(session.permissions)
-      const hasUserView = PermissionManager.hasPermission(session.permissions, PermissionType.USER_VIEW)
-      
-      console.log('AdminDashboard: Permission checks:', { canAccessAdmin, hasUserView })
-      
-      debugInfo = {
-        hasSession: true,
-        user: {
-          email: session.user.email,
-          role: session.user.role,
-          isActive: session.user.isActive,
-          isSuperUser: session.user.isSuperUser
-        },
-        permissions: {
-          total: session.permissions.permissions.length,
-          list: session.permissions.permissions,
-          canAccessAdmin,
-          hasUserView,
-          bothRequired: canAccessAdmin && hasUserView
-        }
-      }
-    } else {
-      console.log('AdminDashboard: No session found - checking cookies directly')
-      // Try to get cookies directly for debugging
-      try {
-        const { cookies } = await import('next/headers')
-        const cookieStore = cookies()
-        const sessionToken = cookieStore.get('session-token')
-        debugInfo = { 
-          hasSession: false, 
-          error: 'No session found',
-          cookieDebug: {
-            sessionTokenExists: !!sessionToken,
-            sessionTokenLength: sessionToken?.value?.length || 0,
-            allCookies: cookieStore.getAll().map(c => ({ name: c.name, hasValue: !!c.value }))
-          }
-        }
-      } catch (cookieError) {
-        debugInfo = { 
-          hasSession: false, 
-          error: 'No session found',
-          cookieError: cookieError instanceof Error ? cookieError.message : 'Unknown cookie error'
-        }
-      }
-    }
-  } catch (error) {
-    console.error('AdminDashboard: Error during authentication:', error)
-    debugInfo = { 
-      hasSession: false, 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : null
-    }
-  }
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -166,117 +99,6 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      {/* Debug Info - Always show for troubleshooting */}
-      {true && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-orange-600" />
-              Authentication Debug Info
-            </CardTitle>
-            <CardDescription>
-              Debug information for troubleshooting Manage Users issue | 
-              DEBUG_AUTH: {process.env.DEBUG_AUTH || 'not set'} | 
-              NODE_ENV: {process.env.NODE_ENV}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2">
-                {debugInfo?.hasSession ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className="font-medium">
-                  Session Status: {debugInfo?.hasSession ? 'Active' : 'None'}
-                </span>
-              </div>
-              
-              {debugInfo?.user && (
-                <div className="ml-6 space-y-1 text-xs">
-                  <p><strong>Email:</strong> {debugInfo.user.email}</p>
-                  <p><strong>Role:</strong> {debugInfo.user.role}</p>
-                  <p><strong>Active:</strong> {debugInfo.user.isActive ? 'Yes' : 'No'}</p>
-                  <p><strong>Super User:</strong> {debugInfo.user.isSuperUser ? 'Yes' : 'No'}</p>
-                </div>
-              )}
-              
-              {debugInfo?.permissions && (
-                <div className="space-y-2">
-                  <p className="font-medium">Permissions ({debugInfo.permissions.total}):</p>
-                  <div className="ml-6 text-xs space-y-1">
-                    <div className="flex items-center gap-2">
-                      {debugInfo.permissions.canAccessAdmin ? (
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <XCircle className="h-3 w-3 text-red-500" />
-                      )}
-                      <span>Admin Panel Access</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {debugInfo.permissions.hasUserView ? (
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <XCircle className="h-3 w-3 text-red-500" />
-                      )}
-                      <span>User View Permission</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {debugInfo.permissions.bothRequired ? (
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <XCircle className="h-3 w-3 text-red-500" />
-                      )}
-                      <span>Can Access Manage Users</span>
-                    </div>
-                  </div>
-                  <details className="text-xs">
-                    <summary className="cursor-pointer">All Permissions</summary>
-                    <div className="mt-1 ml-4 space-y-1">
-                      {debugInfo.permissions.list.map((perm, index) => (
-                        <div key={index}>• {perm}</div>
-                      ))}
-                    </div>
-                  </details>
-                </div>
-              )}
-              
-              {debugInfo?.error && (
-                <div className="text-red-600">
-                  <p><strong>Error:</strong> {debugInfo.error}</p>
-                  {debugInfo.cookieDebug && (
-                    <div className="mt-2 text-xs">
-                      <p><strong>Cookie Debug:</strong></p>
-                      <div className="ml-4 space-y-1">
-                        <p>Session Token Exists: {debugInfo.cookieDebug.sessionTokenExists ? 'Yes' : 'No'}</p>
-                        <p>Token Length: {debugInfo.cookieDebug.sessionTokenLength}</p>
-                        <p>All Cookies ({debugInfo.cookieDebug.allCookies.length}):</p>
-                        <div className="ml-4">
-                          {debugInfo.cookieDebug.allCookies.map((cookie, idx) => (
-                            <div key={idx}>• {cookie.name}: {cookie.hasValue ? 'has value' : 'empty'}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {debugInfo.cookieError && (
-                    <p className="mt-2 text-xs"><strong>Cookie Error:</strong> {debugInfo.cookieError}</p>
-                  )}
-                  {debugInfo.stack && (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer">Stack Trace</summary>
-                      <pre className="text-xs mt-1 bg-red-100 p-2 rounded overflow-auto">
-                        {debugInfo.stack}
-                      </pre>
-                    </details>
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
