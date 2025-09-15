@@ -490,7 +490,7 @@ export class CoursesService {
 
     // Calculate progress if user is provided
     let overallProgress = 0
-    if (userId) {
+    if (userId && course) {
       const allLessons = course.modules.flatMap(m => m.lessons)
       const completedLessons = allLessons.filter(l => 
         l.progress.some(p => p.completed)
@@ -500,9 +500,9 @@ export class CoursesService {
     }
 
     // Calculate total duration
-    const totalMinutes = course.modules
+    const totalMinutes = course ? course.modules
       .flatMap(m => m.lessons)
-      .reduce((total, lesson) => total + (lesson.duration || 0), 0)
+      .reduce((total, lesson) => total + (lesson.duration || 0), 0) : 0
 
     const hours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
