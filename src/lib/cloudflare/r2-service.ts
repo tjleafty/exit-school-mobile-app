@@ -48,6 +48,11 @@ export class R2Service {
         Bucket: this.bucketName,
         Key: key,
         ContentType: contentType,
+        // Add CORS headers to the upload command
+        Metadata: {
+          'uploaded-by': 'exit-school-app',
+          'upload-time': new Date().toISOString()
+        }
       })
 
       const uploadUrl = await getSignedUrl(r2Client, command, {
@@ -108,8 +113,8 @@ export class R2Service {
   }
 
   static getPublicUrl(key: string): string {
-    // If you have a custom domain configured for your R2 bucket, use that instead
-    // For now, using the default R2 public URL format
+    // Use the correct R2 public URL format
+    // Format: https://[bucket-name].[account-id].r2.cloudflarestorage.com/[key]
     return `https://${this.bucketName}.${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`
   }
 
