@@ -72,88 +72,167 @@ export default async function AdminCoursesPage() {
     } catch (dbError) {
       console.error('AdminCoursesPage: Database error, using mock courses:', dbError)
       
-      // Fall back to mock courses for Vercel deployment
+      // Fall back to comprehensive M&A training courses for production deployment
       courses = [
         {
-          id: 'course-1',
-          title: 'Business Acquisitions 101',
-          description: 'Learn the fundamentals of acquiring businesses',
+          id: 'course-fundamentals-ma',
+          title: 'Fundamentals of Mergers & Acquisitions',
+          description: 'Master the essential concepts, processes, and strategies for successful business acquisitions. Perfect for entrepreneurs and business professionals looking to grow through acquisition.',
           status: CourseStatus.PUBLISHED,
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-15'),
           author: {
-            name: 'John Smith',
-            email: 'instructor@theexitschool.com'
+            name: 'Dr. Michael Rodriguez',
+            email: 'rodriguez@theexitschool.com'
           },
           modules: [
             {
-              id: 'module-1',
+              id: 'module-foundations',
+              title: 'M&A Foundations',
               lessons: [
-                { id: 'lesson-1' },
-                { id: 'lesson-2' },
-                { id: 'lesson-3' }
+                { id: 'lesson-intro-ma', title: 'Introduction to M&A Strategy', type: 'VIDEO' },
+                { id: 'lesson-types-deals', title: 'Types of Acquisition Deals', type: 'VIDEO' },
+                { id: 'lesson-market-analysis', title: 'Market Analysis & Opportunity Assessment', type: 'VIDEO' },
+                { id: 'lesson-initial-screening', title: 'Initial Business Screening', type: 'ARTICLE' }
               ]
             },
             {
-              id: 'module-2', 
+              id: 'module-valuation',
+              title: 'Business Valuation',
               lessons: [
-                { id: 'lesson-4' },
-                { id: 'lesson-5' }
+                { id: 'lesson-valuation-methods', title: 'Valuation Methods Overview', type: 'VIDEO' },
+                { id: 'lesson-dcf-analysis', title: 'Discounted Cash Flow Analysis', type: 'VIDEO' },
+                { id: 'lesson-comparable-analysis', title: 'Comparable Company Analysis', type: 'VIDEO' },
+                { id: 'lesson-valuation-tools', title: 'Valuation Tools & Templates', type: 'ARTICLE' }
               ]
-            }
-          ],
-          _count: {
-            enrollments: 127
-          }
-        },
-        {
-          id: 'course-2',
-          title: 'Advanced M&A Strategies',
-          description: 'Advanced techniques for complex acquisitions',
-          status: CourseStatus.DRAFT,
-          createdAt: new Date('2024-01-10'),
-          updatedAt: new Date('2024-01-20'),
-          author: {
-            name: 'Dr. Emily Davis',
-            email: 'instructor@theexitschool.com'
-          },
-          modules: [
+            },
             {
-              id: 'module-3',
+              id: 'module-deal-structure',
+              title: 'Deal Structuring',
               lessons: [
-                { id: 'lesson-6' },
-                { id: 'lesson-7' }
+                { id: 'lesson-deal-structures', title: 'Common Deal Structures', type: 'VIDEO' },
+                { id: 'lesson-financing-options', title: 'Financing Your Acquisition', type: 'VIDEO' },
+                { id: 'lesson-terms-negotiation', title: 'Key Terms & Negotiation', type: 'VIDEO' }
               ]
             }
           ],
           _count: {
-            enrollments: 45
+            enrollments: 342
           }
         },
         {
-          id: 'course-3',
-          title: 'Due Diligence Masterclass',
-          description: 'Complete guide to due diligence processes',
+          id: 'course-due-diligence',
+          title: 'Due Diligence Mastery',
+          description: 'Comprehensive guide to conducting thorough due diligence. Learn to identify risks, validate opportunities, and make informed acquisition decisions with confidence.',
           status: CourseStatus.PUBLISHED,
-          createdAt: new Date('2024-01-05'),
+          createdAt: new Date('2024-01-10'),
           updatedAt: new Date('2024-01-25'),
           author: {
-            name: 'Exit School Admin',
-            email: 'admin@theexitschool.com'
+            name: 'Sarah Chen, CPA',
+            email: 'chen@theexitschool.com'
           },
           modules: [
             {
-              id: 'module-4',
+              id: 'module-dd-framework',
+              title: 'Due Diligence Framework',
               lessons: [
-                { id: 'lesson-8' },
-                { id: 'lesson-9' },
-                { id: 'lesson-10' },
-                { id: 'lesson-11' }
+                { id: 'lesson-dd-overview', title: 'Due Diligence Process Overview', type: 'VIDEO' },
+                { id: 'lesson-dd-checklist', title: 'Complete Due Diligence Checklist', type: 'ARTICLE' },
+                { id: 'lesson-team-roles', title: 'Building Your DD Team', type: 'VIDEO' },
+                { id: 'lesson-timeline-planning', title: 'Timeline & Project Management', type: 'ARTICLE' }
+              ]
+            },
+            {
+              id: 'module-financial-dd',
+              title: 'Financial Due Diligence',
+              lessons: [
+                { id: 'lesson-financial-analysis', title: 'Financial Statement Analysis', type: 'VIDEO' },
+                { id: 'lesson-quality-earnings', title: 'Quality of Earnings Assessment', type: 'VIDEO' },
+                { id: 'lesson-cash-flow-review', title: 'Cash Flow & Working Capital Review', type: 'VIDEO' },
+                { id: 'lesson-accounting-policies', title: 'Accounting Policies & Adjustments', type: 'ARTICLE' },
+                { id: 'lesson-financial-projections', title: 'Validating Financial Projections', type: 'VIDEO' }
+              ]
+            },
+            {
+              id: 'module-operational-dd',
+              title: 'Operational Due Diligence',
+              lessons: [
+                { id: 'lesson-operations-review', title: 'Operations & Management Assessment', type: 'VIDEO' },
+                { id: 'lesson-customer-analysis', title: 'Customer Base & Revenue Analysis', type: 'VIDEO' },
+                { id: 'lesson-supplier-relationships', title: 'Supplier & Vendor Relationships', type: 'ARTICLE' },
+                { id: 'lesson-technology-systems', title: 'Technology & Systems Review', type: 'VIDEO' }
+              ]
+            },
+            {
+              id: 'module-legal-dd',
+              title: 'Legal & Compliance Due Diligence',
+              lessons: [
+                { id: 'lesson-legal-structure', title: 'Corporate Structure & Governance', type: 'VIDEO' },
+                { id: 'lesson-contracts-review', title: 'Key Contracts & Agreements', type: 'ARTICLE' },
+                { id: 'lesson-compliance-issues', title: 'Regulatory & Compliance Issues', type: 'VIDEO' },
+                { id: 'lesson-litigation-risks', title: 'Litigation & Legal Risks', type: 'ARTICLE' }
               ]
             }
           ],
           _count: {
-            enrollments: 89
+            enrollments: 198
+          }
+        },
+        {
+          id: 'course-integration-management',
+          title: 'Post-Acquisition Integration',
+          description: 'Master the critical 100 days after acquisition. Learn proven strategies for successful integration, culture alignment, and value creation to maximize your investment returns.',
+          status: CourseStatus.DRAFT,
+          createdAt: new Date('2024-02-01'),
+          updatedAt: new Date('2024-02-15'),
+          author: {
+            name: 'James Mitchell',
+            email: 'mitchell@theexitschool.com'
+          },
+          modules: [
+            {
+              id: 'module-integration-planning',
+              title: 'Integration Planning',
+              lessons: [
+                { id: 'lesson-integration-strategy', title: 'Developing Integration Strategy', type: 'VIDEO' },
+                { id: 'lesson-day-one-planning', title: 'Day One Readiness Planning', type: 'VIDEO' },
+                { id: 'lesson-communication-plan', title: 'Stakeholder Communication Plan', type: 'ARTICLE' },
+                { id: 'lesson-risk-mitigation', title: 'Integration Risk Mitigation', type: 'VIDEO' }
+              ]
+            },
+            {
+              id: 'module-operational-integration',
+              title: 'Operational Integration',
+              lessons: [
+                { id: 'lesson-systems-integration', title: 'Systems & Technology Integration', type: 'VIDEO' },
+                { id: 'lesson-process-standardization', title: 'Process Standardization', type: 'VIDEO' },
+                { id: 'lesson-performance-metrics', title: 'Performance Tracking & KPIs', type: 'ARTICLE' },
+                { id: 'lesson-efficiency-improvements', title: 'Identifying Efficiency Opportunities', type: 'VIDEO' }
+              ]
+            },
+            {
+              id: 'module-people-culture',
+              title: 'People & Culture Integration',
+              lessons: [
+                { id: 'lesson-culture-assessment', title: 'Cultural Assessment & Alignment', type: 'VIDEO' },
+                { id: 'lesson-team-integration', title: 'Team Integration Strategies', type: 'VIDEO' },
+                { id: 'lesson-retention-strategies', title: 'Key Talent Retention', type: 'ARTICLE' },
+                { id: 'lesson-change-management', title: 'Change Management Best Practices', type: 'VIDEO' }
+              ]
+            },
+            {
+              id: 'module-value-creation',
+              title: 'Value Creation & Optimization',
+              lessons: [
+                { id: 'lesson-synergy-realization', title: 'Synergy Identification & Realization', type: 'VIDEO' },
+                { id: 'lesson-growth-opportunities', title: 'Growth Opportunity Development', type: 'VIDEO' },
+                { id: 'lesson-performance-optimization', title: 'Performance Optimization', type: 'ARTICLE' },
+                { id: 'lesson-roi-measurement', title: 'ROI Measurement & Reporting', type: 'VIDEO' }
+              ]
+            }
+          ],
+          _count: {
+            enrollments: 73
           }
         }
       ]
