@@ -13,7 +13,8 @@ import {
   LogOut,
   Menu,
   X,
-  GraduationCap
+  GraduationCap,
+  Wrench
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -93,12 +94,38 @@ export function Navigation({ userRole }: { userRole?: string }) {
 
   // Only show navigation if user is logged in
   const isLoggedIn = effectiveRole !== null
+  const isAdmin = effectiveRole?.toUpperCase() === 'ADMIN'
 
   return (
     <>
       {/* Desktop Navigation */}
       {isLoggedIn ? (
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-4">
+          {/* Admin-specific buttons in header */}
+          {isAdmin && (
+            <>
+              <Link href="/admin/users">
+                <Button variant="ghost" size="sm">
+                  <Users className="h-4 w-4 mr-2" />
+                  Users
+                </Button>
+              </Link>
+              <Link href="/admin/courses">
+                <Button variant="ghost" size="sm">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Courses
+                </Button>
+              </Link>
+              <Link href="/admin/tools">
+                <Button variant="ghost" size="sm">
+                  <Wrench className="h-4 w-4 mr-2" />
+                  Tools
+                </Button>
+              </Link>
+            </>
+          )}
+          
+          {/* Regular navigation items */}
           {filteredNavItems.map((item) => (
             <Link
               key={item.href}
@@ -154,6 +181,36 @@ export function Navigation({ userRole }: { userRole?: string }) {
           <nav className="flex flex-col p-4 space-y-2">
             {isLoggedIn ? (
               <>
+                {/* Admin-specific buttons in mobile navigation */}
+                {isAdmin && (
+                  <>
+                    <Link
+                      href="/admin/users"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
+                    >
+                      <Users className="h-4 w-4" />
+                      <span>Users</span>
+                    </Link>
+                    <Link
+                      href="/admin/courses"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Courses</span>
+                    </Link>
+                    <Link
+                      href="/admin/tools"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
+                    >
+                      <Wrench className="h-4 w-4" />
+                      <span>Tools</span>
+                    </Link>
+                  </>
+                )}
+                
                 {filteredNavItems.map((item) => (
                   <Link
                     key={item.href}

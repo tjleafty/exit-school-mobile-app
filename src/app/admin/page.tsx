@@ -159,24 +159,11 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your platform and monitor system health
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/admin/users">
-            <Button>Users</Button>
-          </Link>
-          <Link href="/admin/courses">
-            <Button variant="outline">Courses</Button>
-          </Link>
-          <Link href="/admin/tools">
-            <Button variant="outline">Tools</Button>
-          </Link>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage your platform and monitor system health
+        </p>
       </div>
 
       {/* Debug Info - Always show for troubleshooting */}
