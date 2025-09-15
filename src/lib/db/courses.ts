@@ -101,24 +101,55 @@ export class CoursesService {
           publishedAt: new Date('2024-01-15'),
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-15'),
+          authorId: 'instructor-1',
           author: {
+            id: 'instructor-1',
             name: 'Dr. Michael Rodriguez',
             email: 'rodriguez@theexitschool.com'
           },
           modules: [
             {
+              id: 'module-foundations',
+              title: 'M&A Foundations',
+              description: 'Foundation concepts',
+              order: 1,
+              courseId: 'course-fundamentals-ma',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 15 }, { duration: 20 }, { duration: 18 }, { duration: 12 }
+                { id: 'lesson-1', title: 'Intro', type: 'VIDEO' as const, duration: 15, moduleId: 'module-foundations', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-2', title: 'Types', type: 'VIDEO' as const, duration: 20, moduleId: 'module-foundations', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-3', title: 'Analysis', type: 'VIDEO' as const, duration: 18, moduleId: 'module-foundations', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-4', title: 'Screening', type: 'ARTICLE' as const, duration: 12, moduleId: 'module-foundations', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-valuation',
+              title: 'Business Valuation',
+              description: 'Valuation methods',
+              order: 2,
+              courseId: 'course-fundamentals-ma',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 22 }, { duration: 25 }, { duration: 18 }, { duration: 15 }
+                { id: 'lesson-5', title: 'Methods', type: 'VIDEO' as const, duration: 22, moduleId: 'module-valuation', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-6', title: 'DCF', type: 'VIDEO' as const, duration: 25, moduleId: 'module-valuation', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-7', title: 'Comparables', type: 'VIDEO' as const, duration: 18, moduleId: 'module-valuation', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-8', title: 'Tools', type: 'ARTICLE' as const, duration: 15, moduleId: 'module-valuation', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-deal-structure',
+              title: 'Deal Structuring',
+              description: 'Deal structures',
+              order: 3,
+              courseId: 'course-fundamentals-ma',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 20 }, { duration: 30 }, { duration: 25 }
+                { id: 'lesson-9', title: 'Structures', type: 'VIDEO' as const, duration: 20, moduleId: 'module-deal-structure', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-10', title: 'Financing', type: 'VIDEO' as const, duration: 30, moduleId: 'module-deal-structure', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-11', title: 'Negotiation', type: 'VIDEO' as const, duration: 25, moduleId: 'module-deal-structure', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             }
           ],
@@ -135,29 +166,72 @@ export class CoursesService {
           publishedAt: new Date('2024-01-25'),
           createdAt: new Date('2024-01-10'),
           updatedAt: new Date('2024-01-25'),
+          authorId: 'instructor-2',
           author: {
+            id: 'instructor-2',
             name: 'Sarah Chen, CPA',
             email: 'chen@theexitschool.com'
           },
           modules: [
             {
+              id: 'module-dd-framework',
+              title: 'DD Framework',
+              description: 'Due diligence framework',
+              order: 1,
+              courseId: 'course-due-diligence',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 18 }, { duration: 12 }, { duration: 15 }, { duration: 10 }
+                { id: 'lesson-dd-1', title: 'Overview', type: 'VIDEO' as const, duration: 18, moduleId: 'module-dd-framework', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-2', title: 'Checklist', type: 'ARTICLE' as const, duration: 12, moduleId: 'module-dd-framework', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-3', title: 'Team Building', type: 'VIDEO' as const, duration: 15, moduleId: 'module-dd-framework', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-4', title: 'Timeline', type: 'ARTICLE' as const, duration: 10, moduleId: 'module-dd-framework', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-financial-dd',
+              title: 'Financial DD',
+              description: 'Financial due diligence',
+              order: 2,
+              courseId: 'course-due-diligence',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 25 }, { duration: 22 }, { duration: 20 }, { duration: 15 }, { duration: 18 }
+                { id: 'lesson-dd-5', title: 'Financial Analysis', type: 'VIDEO' as const, duration: 25, moduleId: 'module-financial-dd', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-6', title: 'Quality Earnings', type: 'VIDEO' as const, duration: 22, moduleId: 'module-financial-dd', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-7', title: 'Cash Flow', type: 'VIDEO' as const, duration: 20, moduleId: 'module-financial-dd', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-8', title: 'Accounting', type: 'ARTICLE' as const, duration: 15, moduleId: 'module-financial-dd', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-9', title: 'Projections', type: 'VIDEO' as const, duration: 18, moduleId: 'module-financial-dd', content: '', description: '', order: 5, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-operational-dd',
+              title: 'Operational DD',
+              description: 'Operational due diligence',
+              order: 3,
+              courseId: 'course-due-diligence',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 20 }, { duration: 18 }, { duration: 12 }, { duration: 15 }
+                { id: 'lesson-dd-10', title: 'Operations', type: 'VIDEO' as const, duration: 20, moduleId: 'module-operational-dd', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-11', title: 'Customers', type: 'VIDEO' as const, duration: 18, moduleId: 'module-operational-dd', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-12', title: 'Suppliers', type: 'ARTICLE' as const, duration: 12, moduleId: 'module-operational-dd', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-13', title: 'Technology', type: 'VIDEO' as const, duration: 15, moduleId: 'module-operational-dd', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-legal-dd',
+              title: 'Legal DD',
+              description: 'Legal due diligence',
+              order: 4,
+              courseId: 'course-due-diligence',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 16 }, { duration: 14 }, { duration: 18 }, { duration: 12 }
+                { id: 'lesson-dd-14', title: 'Structure', type: 'VIDEO' as const, duration: 16, moduleId: 'module-legal-dd', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-15', title: 'Contracts', type: 'ARTICLE' as const, duration: 14, moduleId: 'module-legal-dd', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-16', title: 'Compliance', type: 'VIDEO' as const, duration: 18, moduleId: 'module-legal-dd', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-dd-17', title: 'Litigation', type: 'ARTICLE' as const, duration: 12, moduleId: 'module-legal-dd', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             }
           ],
@@ -174,29 +248,71 @@ export class CoursesService {
           publishedAt: new Date('2024-02-15'),
           createdAt: new Date('2024-02-01'),
           updatedAt: new Date('2024-02-15'),
+          authorId: 'instructor-3',
           author: {
+            id: 'instructor-3',
             name: 'James Mitchell',
             email: 'mitchell@theexitschool.com'
           },
           modules: [
             {
+              id: 'module-integration-planning',
+              title: 'Integration Planning',
+              description: 'Integration planning',
+              order: 1,
+              courseId: 'course-integration-management',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 20 }, { duration: 18 }, { duration: 15 }, { duration: 22 }
+                { id: 'lesson-int-1', title: 'Strategy', type: 'VIDEO' as const, duration: 20, moduleId: 'module-integration-planning', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-2', title: 'Day One', type: 'VIDEO' as const, duration: 18, moduleId: 'module-integration-planning', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-3', title: 'Communication', type: 'ARTICLE' as const, duration: 15, moduleId: 'module-integration-planning', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-4', title: 'Risk Mitigation', type: 'VIDEO' as const, duration: 22, moduleId: 'module-integration-planning', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-operational-integration',
+              title: 'Operational Integration',
+              description: 'Operational integration',
+              order: 2,
+              courseId: 'course-integration-management',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 25 }, { duration: 20 }, { duration: 16 }, { duration: 18 }
+                { id: 'lesson-int-5', title: 'Systems', type: 'VIDEO' as const, duration: 25, moduleId: 'module-operational-integration', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-6', title: 'Processes', type: 'VIDEO' as const, duration: 20, moduleId: 'module-operational-integration', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-7', title: 'KPIs', type: 'ARTICLE' as const, duration: 16, moduleId: 'module-operational-integration', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-8', title: 'Efficiency', type: 'VIDEO' as const, duration: 18, moduleId: 'module-operational-integration', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-people-culture',
+              title: 'People & Culture',
+              description: 'People and culture integration',
+              order: 3,
+              courseId: 'course-integration-management',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 22 }, { duration: 20 }, { duration: 15 }, { duration: 25 }
+                { id: 'lesson-int-9', title: 'Culture', type: 'VIDEO' as const, duration: 22, moduleId: 'module-people-culture', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-10', title: 'Teams', type: 'VIDEO' as const, duration: 20, moduleId: 'module-people-culture', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-11', title: 'Retention', type: 'ARTICLE' as const, duration: 15, moduleId: 'module-people-culture', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-12', title: 'Change Management', type: 'VIDEO' as const, duration: 25, moduleId: 'module-people-culture', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             },
             {
+              id: 'module-value-creation',
+              title: 'Value Creation',
+              description: 'Value creation and optimization',
+              order: 4,
+              courseId: 'course-integration-management',
+              createdAt: new Date(),
+              updatedAt: new Date(),
               lessons: [
-                { duration: 18 }, { duration: 20 }, { duration: 16 }, { duration: 22 }
+                { id: 'lesson-int-13', title: 'Synergies', type: 'VIDEO' as const, duration: 18, moduleId: 'module-value-creation', content: '', description: '', order: 1, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-14', title: 'Growth', type: 'VIDEO' as const, duration: 20, moduleId: 'module-value-creation', content: '', description: '', order: 2, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-15', title: 'Optimization', type: 'ARTICLE' as const, duration: 16, moduleId: 'module-value-creation', content: '', description: '', order: 3, version: 1, createdAt: new Date(), updatedAt: new Date() },
+                { id: 'lesson-int-16', title: 'ROI', type: 'VIDEO' as const, duration: 22, moduleId: 'module-value-creation', content: '', description: '', order: 4, version: 1, createdAt: new Date(), updatedAt: new Date() }
               ]
             }
           ],
